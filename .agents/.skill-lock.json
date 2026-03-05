@@ -1,0 +1,15 @@
+{
+  "version": 3,
+  "skills": {
+    "golang-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/affaan-m/everything-claude-code.git",
+      "skillPath": "skills/golang-testing/SKILL.md",
+      "skillFolderHash": "94ed8f9605356475945c0c423a4805767cd1456e",
+      "installedAt": "2026-02-24T09:38:16.772Z",
+      "updatedAt": "2026-02-24T09:38:16.772Z"
+    }
+  },
+  "dismissed": {}
+}

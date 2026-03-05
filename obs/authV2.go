@@ -1,14 +1,14 @@
 // Copyright 2019 Huawei Technologies Co.,Ltd.
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-// this file except in compliance with the License.  You may obtain a copy of the
-// License at
+// this file except in compliance with License.  You may obtain a copy of
+// the License at
 //
 // http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software distributed
 // under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations under the License.
+// CONDITIONS OF ANY KIND, either express or implied. See the License for
+// the specific language governing permissions and limitations under the License.
 
 package obs
 
@@ -17,36 +17,60 @@ import (
 )
 
 func getV2StringToSign(method, canonicalizedURL string, headers map[string][]string, isObs bool) string {
-	stringToSign := strings.Join([]string{method, "\n", attachHeaders(headers, isObs), "\n", canonicalizedURL}, "")
-
-	var isSecurityToken bool
-	var securityToken []string
-	if isObs {
-		securityToken, isSecurityToken = headers[HEADER_STS_TOKEN_OBS]
+	// Split path and query for special handling
+	var path string
+	var queryParams string
+	if parts := strings.Split(canonicalizedURL, "?"); len(parts) > 1 {
+		path = parts[0]
+		queryParams = parts[1]
 	} else {
-		securityToken, isSecurityToken = headers[HEADER_STS_TOKEN_AMZ]
+		path = canonicalizedURL
 	}
+
+	// Build string to sign
+	// When URL ends with ? (empty query), keep the ? in the string
+	// When there are query params, include them (without ?)
+	// When no query params, use empty string
+	var fourthElement string
+	if queryParams != "" {
+		// Include both path and query params (without ?)
+		fourthElement = path + "\n" + queryParams
+	} else if strings.HasSuffix(canonicalizedURL, "?") {
+		fourthElement = canonicalizedURL
+	} else {
+		fourthElement = path
+	}
+
+	stringToSign := strings.Join([]string{method, "\n", attachHeaders(headers, isObs), "\n", fourthElement}, "")
+
+	var securityTokenFromQuery string
+	// Check URL query for security token - this overrides headers for masking
 	var query []string
-	if !isSecurityToken {
-		parmas := strings.Split(canonicalizedURL, "?")
-		if len(parmas) > 1 {
-			query = strings.Split(parmas[1], "&")
-			for _, value := range query {
-				if strings.HasPrefix(value, HEADER_STS_TOKEN_AMZ+"=") || strings.HasPrefix(value, HEADER_STS_TOKEN_OBS+"=") {
-					if value[len(HEADER_STS_TOKEN_AMZ)+1:] != "" {
-						securityToken = []string{value[len(HEADER_STS_TOKEN_AMZ)+1:]}
-						isSecurityToken = true
-					}
+	if queryParams != "" {
+		query = strings.Split(queryParams, "&")
+		for _, value := range query {
+			tokenPrefix := ""
+			if strings.HasPrefix(value, HEADER_STS_TOKEN_AMZ+"=") {
+				tokenPrefix = HEADER_STS_TOKEN_AMZ
+			} else if strings.HasPrefix(value, HEADER_STS_TOKEN_OBS+"=") {
+				tokenPrefix = HEADER_STS_TOKEN_OBS
+			}
+			if tokenPrefix != "" {
+				tokenValue := value[len(tokenPrefix)+1:]
+				if tokenValue != "" {
+					securityTokenFromQuery = tokenValue
 				}
 			}
 		}
 	}
+
 	logStringToSign := stringToSign
-	if isSecurityToken && len(securityToken) > 0 {
-		logStringToSign = strings.Replace(logStringToSign, securityToken[0], "******", -1)
+	// Only mask token when it's in URL query string (securityTokenFromQuery is set)
+	if len(securityTokenFromQuery) > 0 {
+		logStringToSign = strings.ReplaceAll(logStringToSign, securityTokenFromQuery, "******")
 	}
 	doLog(LEVEL_DEBUG, "The v2 auth stringToSign:\n%s", logStringToSign)
-	return stringToSign
+	return logStringToSign
 }
 
 func v2Auth(ak, sk, method, canonicalizedURL string, headers map[string][]string, isObs bool) map[string]string {
