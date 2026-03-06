@@ -1864,3 +1864,221 @@ func TestDeleteBucketMirrorBackToSource_ShouldDeleteMirror_WhenSuccess(t *testin
 	require.Nil(t, err)
 	require.NotNil(t, output)
 }
+
+// ==================== SetBucketInventory Tests ====================
+
+func TestSetBucketInventory_ShouldSetInventory_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "PUT", req.Method)
+			assert.Equal(t, "test-inventory-id", req.URL.Query().Get("inventory"))
+			return CreateTestHTTPResponse(200, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	input := &SetBucketInventoryInput{
+		Bucket: TestBucket,
+		InventoryConfiguration: InventoryConfiguration{
+			Id:        "test-inventory-id",
+			IsEnabled: true,
+			Destination: InventoryDestination{
+				Format: "CSV",
+				Bucket: "destination-bucket",
+				Prefix: "inventory/",
+			},
+			Schedule: InventorySchedule{
+				Frequency: "Daily",
+			},
+		},
+	}
+
+	output, err := client.SetBucketInventory(input)
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestSetBucketInventory_ShouldReturnError_GivenNilInput(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.SetBucketInventory(nil)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "is nil")
+}
+
+func TestSetBucketInventory_ShouldReturnError_GivenNetworkFailure(t *testing.T) {
+	mockTransport := &MockRoundTripper{
+		ErrorFunc: func(req *http.Request) error {
+			return assert.AnError
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	input := &SetBucketInventoryInput{
+		Bucket: TestBucket,
+		InventoryConfiguration: InventoryConfiguration{
+			Id:        "test-inventory-id",
+			IsEnabled: true,
+		},
+	}
+
+	output, err := client.SetBucketInventory(input)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+}
+
+// ==================== GetBucketInventory Tests ====================
+
+func TestGetBucketInventory_ShouldReturnInventory_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "GET", req.Method)
+			assert.Equal(t, "test-inventory-id", req.URL.Query().Get("inventory"))
+			return CreateTestHTTPResponse(200, TestGetBucketInventoryXML, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.GetBucketInventory(TestBucket, "test-inventory-id")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-inventory-id", output.Id)
+	assert.True(t, output.IsEnabled)
+	assert.Equal(t, "CSV", output.Destination.Format)
+	assert.Equal(t, "destination-bucket", output.Destination.Bucket)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestGetBucketInventory_ShouldReturnError_GivenNetworkFailure(t *testing.T) {
+	mockTransport := &MockRoundTripper{
+		ErrorFunc: func(req *http.Request) error {
+			return assert.AnError
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.GetBucketInventory(TestBucket, "test-inventory-id")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+}
+
+// ==================== ListBucketInventory Tests ====================
+
+func TestListBucketInventory_ShouldReturnInventoryList_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "GET", req.Method)
+			assert.Equal(t, "", req.URL.Query().Get("inventory"))
+			return CreateTestHTTPResponse(200, TestListBucketInventoryXML, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.ListBucketInventory(TestBucket)
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Len(t, output.InventoryConfigurations, 2)
+	assert.Equal(t, "inventory-1", output.InventoryConfigurations[0].Id)
+	assert.Equal(t, "inventory-2", output.InventoryConfigurations[1].Id)
+	assert.False(t, output.IsTruncated)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestListBucketInventory_ShouldReturnEmptyList_GivenNoInventories(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			emptyListXML := `<?xml version="1.0" encoding="UTF-8"?>
+<ListInventoryConfigurationsResult>
+	<IsTruncated>false</IsTruncated>
+</ListInventoryConfigurationsResult>`
+			return CreateTestHTTPResponse(200, emptyListXML, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.ListBucketInventory(TestBucket)
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Len(t, output.InventoryConfigurations, 0)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestListBucketInventory_ShouldReturnError_GivenNetworkFailure(t *testing.T) {
+	mockTransport := &MockRoundTripper{
+		ErrorFunc: func(req *http.Request) error {
+			return assert.AnError
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.ListBucketInventory(TestBucket)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+}
+
+// ==================== DeleteBucketInventory Tests ====================
+
+func TestDeleteBucketInventory_ShouldDeleteInventory_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "DELETE", req.Method)
+			assert.Equal(t, "test-inventory-id", req.URL.Query().Get("inventory"))
+			return CreateTestHTTPResponse(204, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.DeleteBucketInventory(TestBucket, "test-inventory-id")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestDeleteBucketInventory_ShouldReturnError_GivenNetworkFailure(t *testing.T) {
+	mockTransport := &MockRoundTripper{
+		ErrorFunc: func(req *http.Request) error {
+			return assert.AnError
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.DeleteBucketInventory(TestBucket, "test-inventory-id")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+}

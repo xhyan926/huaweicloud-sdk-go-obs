@@ -129,6 +129,9 @@ const (
 
 	// SubResourcePublicPolicyStatus subResource value: policyStatus
 	SubResourceBucketPolicyPublicStatus SubResourceType = "policyStatus"
+
+	// SubResourceInventory subResource value: inventory
+	SubResourceInventory SubResourceType = "inventory"
 )
 
 // objectKeyType defines the objectKey value
@@ -369,4 +372,45 @@ type BucketRedundancyType string
 const (
 	BucketRedundancyClassic BucketRedundancyType = "CLASSIC"
 	BucketRedundancyFusion  BucketRedundancyType = "FUSION"
+)
+
+// InventoryFrequencyType defines inventory schedule frequency
+type InventoryFrequencyType string
+
+const (
+	// InventoryFrequencyDaily inventory frequency: Daily
+	InventoryFrequencyDaily InventoryFrequencyType = "Daily"
+
+	// InventoryFrequencyWeekly inventory frequency: Weekly
+	InventoryFrequencyWeekly InventoryFrequencyType = "Weekly"
+)
+
+// InventoryOptionalFieldType defines inventory optional fields
+const (
+	// InventoryFieldSize inventory field: Size
+	InventoryFieldSize = "Size"
+
+	// InventoryFieldLastModifiedDate inventory field: LastModifiedDate
+	InventoryFieldLastModifiedDate = "LastModifiedDate"
+
+	// InventoryFieldETag inventory field: ETag
+	InventoryFieldETag = "ETag"
+
+	// InventoryFieldStorageClass inventory field: StorageClass
+	InventoryFieldStorageClass = "StorageClass"
+
+	// InventoryFieldIsMultipartUploaded inventory field: IsMultipartUploaded
+	InventoryFieldIsMultipartUploaded = "IsMultipartUploaded"
+
+	// InventoryFieldReplicationStatus inventory field: ReplicationStatus
+	InventoryFieldReplicationStatus = "ReplicationStatus"
+
+	// InventoryFieldEncryptionStatus inventory field: EncryptionStatus
+	InventoryFieldEncryptionStatus = "EncryptionStatus"
+
+	// InventoryFieldObjectLockRetainUntilDate inventory field: ObjectLockRetainUntilDate
+	InventoryFieldObjectLockRetainUntilDate = "ObjectLockRetainUntilDate"
+
+	// InventoryFieldObjectLockMode inventory field: ObjectLockMode
+	InventoryFieldObjectLockMode = "ObjectLockMode"
 )

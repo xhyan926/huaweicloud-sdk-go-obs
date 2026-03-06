@@ -326,3 +326,57 @@ const TestObjectACLXML = `<?xml version="1.0" encoding="UTF-8"?>
 		</Grant>
 	</AccessControlList>
 </AccessControlPolicy>`
+
+// TestGetBucketInventoryXML is a sample bucket inventory configuration XML
+const TestGetBucketInventoryXML = `<?xml version="1.0" encoding="UTF-8"?>
+<InventoryConfiguration>
+	<Id>test-inventory-id</Id>
+	<IsEnabled>true</IsEnabled>
+	<Destination>
+		<Format>CSV</Format>
+		<Bucket>destination-bucket</Bucket>
+		<Prefix>inventory/</Prefix>
+	</Destination>
+	<Schedule>
+		<Frequency>Daily</Frequency>
+	</Schedule>
+	<Filter>
+		<Prefix>test-prefix/</Prefix>
+	</Filter>
+	<IncludedObjectVersions>All</IncludedObjectVersions>
+	<OptionalFields>
+		<Field>Size</Field>
+		<Field>LastModifiedDate</Field>
+		<Field>ETag</Field>
+	</OptionalFields>
+</InventoryConfiguration>`
+
+// TestListBucketInventoryXML is a sample bucket inventory list XML
+const TestListBucketInventoryXML = `<?xml version="1.0" encoding="UTF-8"?>
+<ListInventoryConfigurationsResult>
+	<InventoryConfiguration>
+		<Id>inventory-1</Id>
+		<IsEnabled>true</IsEnabled>
+		<Destination>
+			<Format>CSV</Format>
+			<Bucket>destination-bucket</Bucket>
+			<Prefix>inventory/</Prefix>
+		</Destination>
+		<Schedule>
+			<Frequency>Daily</Frequency>
+		</Schedule>
+	</InventoryConfiguration>
+	<InventoryConfiguration>
+		<Id>inventory-2</Id>
+		<IsEnabled>false</IsEnabled>
+		<Destination>
+			<Format>CSV</Format>
+			<Bucket>destination-bucket</Bucket>
+			<Prefix>inventory2/</Prefix>
+		</Destination>
+		<Schedule>
+			<Frequency>Weekly</Frequency>
+		</Schedule>
+	</InventoryConfiguration>
+	<IsTruncated>false</IsTruncated>
+</ListInventoryConfigurationsResult>`

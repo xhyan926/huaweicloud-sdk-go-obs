@@ -350,3 +350,9 @@ func (input SetBucketCustomDomainInput) trans(isObs bool) (params map[string]str
 func (input PutBucketPublicAccessBlockInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
 	return trans(SubResourcePublicAccessBlock, input)
 }
+
+func (input SetBucketInventoryInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceInventory): input.Id}
+	data, err = ConvertRequestToIoReader(input.InventoryConfiguration)
+	return
+}

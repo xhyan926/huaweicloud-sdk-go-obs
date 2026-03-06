@@ -867,3 +867,56 @@ func (obsClient ObsClient) GetBucketPublicStatus(bucketName string, extensions .
 	}
 	return
 }
+
+// SetBucketInventory sets the inventory configuration for a bucket.
+//
+// You can use this API to set an inventory configuration for a bucket.
+// The inventory configuration will periodically generate inventory reports listing objects in the bucket.
+func (obsClient ObsClient) SetBucketInventory(input *SetBucketInventoryInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetBucketInventoryInput is nil")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetBucketInventory", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketInventory gets an inventory configuration for a bucket.
+//
+// You can use this API to get a specific inventory configuration for a bucket.
+func (obsClient ObsClient) GetBucketInventory(bucketName string, id string, extensions ...extensionOptions) (output *GetBucketInventoryOutput, err error) {
+	output = &GetBucketInventoryOutput{}
+	err = obsClient.doActionWithBucket("GetBucketInventory", HTTP_GET, bucketName, newSubResourceSerialV2(SubResourceInventory, id), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// ListBucketInventory lists all inventory configurations for a bucket.
+//
+// You can use this API to list all inventory configurations for a bucket.
+func (obsClient ObsClient) ListBucketInventory(bucketName string, extensions ...extensionOptions) (output *ListBucketInventoryOutput, err error) {
+	output = &ListBucketInventoryOutput{}
+	err = obsClient.doActionWithBucket("ListBucketInventory", HTTP_GET, bucketName, newSubResourceSerial(SubResourceInventory), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketInventory deletes an inventory configuration for a bucket.
+//
+// You can use this API to delete a specific inventory configuration for a bucket.
+func (obsClient ObsClient) DeleteBucketInventory(bucketName string, id string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("DeleteBucketInventory", HTTP_DELETE, bucketName, newSubResourceSerialV2(SubResourceInventory, id), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}

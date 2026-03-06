@@ -435,3 +435,68 @@ type GetBucketPolicyPublicStatusOutput struct {
 	BaseModel
 	PolicyPublicStatus
 }
+
+// SetBucketInventoryInput is the input parameter of SetBucketInventory function
+type SetBucketInventoryInput struct {
+	Bucket string `xml:"-"`
+	InventoryConfiguration
+}
+
+// GetBucketInventoryOutput is the result of GetBucketInventory function
+type GetBucketInventoryOutput struct {
+	BaseModel
+	InventoryConfiguration
+}
+
+// ListBucketInventoryOutput is the result of ListBucketInventory function
+type ListBucketInventoryOutput struct {
+	BaseModel
+	XMLName                xml.Name               `xml:"ListInventoryConfigurationsResult"`
+	InventoryConfigurations []InventoryConfiguration `xml:"InventoryConfiguration"`
+	IsTruncated            bool                   `xml:"IsTruncated"`
+	NextId                 string                 `xml:"NextId"`
+}
+
+// DeleteBucketInventoryInput is the input parameter of DeleteBucketInventory function
+type DeleteBucketInventoryInput struct {
+	Bucket string `xml:"-"`
+	Id     string `xml:"-"`
+}
+
+// InventoryConfiguration defines the bucket inventory configuration
+type InventoryConfiguration struct {
+	XMLName                 xml.Name              `xml:"InventoryConfiguration" json:"-"`
+	Id                      string                `xml:"Id"`
+	IsEnabled               bool                  `xml:"IsEnabled"`
+	Destination             InventoryDestination   `xml:"Destination"`
+	Schedule                InventorySchedule     `xml:"Schedule"`
+	Filter                  *InventoryFilter      `xml:"Filter,omitempty"`
+	IncludedObjectVersions  string                `xml:"IncludedObjectVersions,omitempty"`
+	OptionalFields          *InventoryOptionalFields `xml:"OptionalFields,omitempty"`
+}
+
+// InventoryDestination defines where inventory reports are stored
+type InventoryDestination struct {
+	XMLName   xml.Name       `xml:"Destination" json:"-"`
+	Format    string         `xml:"Format"`
+	Bucket    string         `xml:"Bucket"`
+	Prefix    string         `xml:"Prefix"`
+}
+
+// InventorySchedule defines the frequency of inventory generation
+type InventorySchedule struct {
+	XMLName   xml.Name `xml:"Schedule" json:"-"`
+	Frequency string   `xml:"Frequency"`
+}
+
+// InventoryFilter defines object filter for inventory
+type InventoryFilter struct {
+	XMLName xml.Name `xml:"Filter" json:"-"`
+	Prefix  string   `xml:"Prefix,omitempty"`
+}
+
+// InventoryOptionalFields defines optional metadata fields to include in inventory
+type InventoryOptionalFields struct {
+	XMLName xml.Name `xml:"OptionalFields" json:"-"`
+	Fields  []string `xml:"Field,omitempty"`
+}

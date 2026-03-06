@@ -14,11 +14,11 @@
 ### 阶段一：高优先级功能（立即实施）
 
 #### 任务组 1：桶清单功能 (Bucket Inventory)
-1. [子任务 1.1 - 桶清单数据模型定义](subtasks/task-01/TASK.md)
-2. [子任务 1.2 - 桶清单常量和类型定义](subtasks/task-02/TASK.md)
-3. [子任务 1.3 - 桶清单 Trait 层实现](subtasks/task-03/TASK.md)
-4. [子任务 1.4 - 桶清单客户端方法实现](subtasks/task-04/TASK.md)
-5. [子任务 1.5 - 桶清单单元测试](subtasks/task-05/TASK.md)
+1. [x 子任务 1.1 - 桶清单数据模型定义](subtasks/task-01/TASK.md) ✅
+2. [x 子任务 1.2 - 桶清单常量和类型定义](subtasks/task-02/TASK.md) ✅
+3. [x 子任务 1.3 - 桶清单 Trait 层实现](subtasks/task-03/TASK.md) ✅
+4. [x 子任务 1.4 - 桶清单客户端方法实现](subtasks/task-04/TASK.md) ✅
+5. [x 子任务 1.5 - 桶清单单元测试](subtasks/task-05/TASK.md) ✅
 
 #### 任务组 2：POST 上传策略和签名生成
 6. [子任务 2.1 - POST 策略数据模型定义](subtasks/task-06/TASK.md)
@@ -72,7 +72,8 @@
 ## 总体进度
 
 ### 阶段一：高优先级功能（13.5 天）
-- [ ] 任务组 1：桶清单功能（5 天）
+- [x] 任务组 1：桶清单功能（5 天）✅ 已完成，详见 `subtasks/task-group1-summary/ACCEPTANCE_REPORT.md`
+  - ✅ API 接口文档已生成到 `docs/bucket/README.md`
 - [ ] 任务组 2：POST 上传策略（6 天）
 - [ ] 任务组 3：参数完整性改进（2.5 天）
 
@@ -108,9 +109,10 @@
 - [ ] 通过 go vet 和 golint 检查
 
 ### 文档完整性
-- [ ] 所有公开方法有文档注释
-- [ ] 提供完整的示例代码
-- [ ] README 更新
+- [x] 所有公开方法有文档注释（桶清单功能已完成）
+- [x] 提供完整的示例代码（桶清单功能已完成）
+- [x] API 接口文档生成到 docs 目录（桶清单功能已完成）
+- [x] README 更新
 
 ### 向后兼容性
 - [ ] 不影响现有功能
