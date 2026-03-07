@@ -246,6 +246,10 @@ func (obsClient ObsClient) GetBucketFSStatus(input *GetBucketFSStatusInput, exte
 // You can use this API to obtain storage information about a bucket, including the
 // bucket size and number of objects in the bucket.
 func (obsClient ObsClient) GetBucketStorageInfo(bucketName string, extensions ...extensionOptions) (output *GetBucketStorageInfoOutput, err error) {
+	if bucketName == "" {
+		return nil, errors.New("obs: bucketName is empty")
+	}
+
 	output = &GetBucketStorageInfoOutput{}
 	err = obsClient.doActionWithBucket("GetBucketStorageInfo", HTTP_GET, bucketName, newSubResourceSerial(SubResourceStorageInfo), output, extensions)
 	if err != nil {

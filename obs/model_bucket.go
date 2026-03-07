@@ -143,8 +143,19 @@ type GetBucketQuotaOutput struct {
 type GetBucketStorageInfoOutput struct {
 	BaseModel
 	XMLName      xml.Name `xml:"GetBucketStorageInfoResult"`
+	Location     string   `xml:"Location"`
+	Bucket       string   `xml:"Bucket"`
 	Size         int64    `xml:"Size"`
 	ObjectNumber int      `xml:"ObjectNumber"`
+	Standard     StorageTypeDetail `xml:"Standard"`
+	Warm         StorageTypeDetail `xml:"Warm"`
+	Cold         StorageTypeDetail `xml:"Cold"`
+}
+
+// StorageTypeDetail defines storage information for a specific storage class
+type StorageTypeDetail struct {
+	ObjectNumber int64 `xml:"ObjectNumber"`
+	Size         int64 `xml:"Size"`
 }
 
 type getBucketLocationOutputS3 struct {

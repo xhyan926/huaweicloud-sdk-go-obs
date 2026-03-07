@@ -4,8 +4,150 @@
 
 ## 目录
 
+- [获取桶存量信息](#获取桶存量信息)
 - [桶清单管理](#桶清单管理)
 - [跨区域复制](#跨区域复制)
+
+---
+
+## 获取桶存量信息
+
+获取桶中的对象个数及对象占用空间，包括标准存储、低频存储和归档存储的详细信息。
+
+### GetBucketStorageInfo
+
+获取指定桶的存量信息，包括对象数量和存储空间大小，并按存储类型分类统计。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) GetBucketStorageInfo(bucketName string, extensions ...extensionOptions) (output *GetBucketStorageInfoOutput, err error)
+```
+
+#### 参数说明
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| bucketName | string | 是 | 桶名 |
+
+#### 返回值
+
+**GetBucketStorageInfoOutput**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| Location | string | 桶所在区域 |
+| Bucket | string | 桶名 |
+| Size | int64 | 桶中对象占用的总存储空间（字节） |
+| ObjectNumber | int | 桶中的总对象个数 |
+| Standard | StorageTypeDetail | 标准存储的详细信息 |
+| Warm | StorageTypeDetail | 低频存储的详细信息 |
+| Cold | StorageTypeDetail | 归档存储的详细信息 |
+
+**StorageTypeDetail**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| ObjectNumber | int64 | 该存储类型的对象数量 |
+| Size | int64 | 该存储类型的占用空间（字节） |
+
+#### 使用示例
+
+```go
+package main
+
+import (
+    "fmt"
+    obs "github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+)
+
+func main() {
+    // 创建客户端
+    obsClient, err := obs.New("your-ak", "your-sk", "https://obs.cn-north-4.myhuaweicloud.com")
+    if err != nil {
+        panic(err)
+    }
+
+    // 获取桶存量信息
+    output, err := obsClient.GetBucketStorageInfo("my-bucket")
+    if err != nil {
+        fmt.Printf("获取桶存量信息失败: %v\n", err)
+        return
+    }
+
+    fmt.Printf("桶存量信息：\n")
+    fmt.Printf("  桶名: %s\n", output.Bucket)
+    fmt.Printf("  区域: %s\n", output.Location)
+    fmt.Printf("  总对象数: %d\n", output.ObjectNumber)
+    fmt.Printf("  总存储空间: %d 字节\n", output.Size)
+
+    // 按存储类型显示详细信息
+    fmt.Printf("  标准存储: %d 对象, %d 字节\n", output.Standard.ObjectNumber, output.Standard.Size)
+    fmt.Printf("  低频存储: %d 对象, %d 字节\n", output.Warm.ObjectNumber, output.Warm.Size)
+    fmt.Printf("  归档存储: %d 对象, %d 字节\n", output.Cold.ObjectNumber, output.Cold.Size)
+}
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+
+#### 注意事项
+
+1. 桶名必须符合 OBS 桶名命名规范
+2. 需要具有桶的读取权限
+3. 存量信息数据可能存在一定的延迟，不是实时数据
+4. 对象数量和存储空间为统计值，可能存在一定的误差
+
+#### 使用场景
+
+**场景 1：监控桶存储使用情况**
+
+适用于需要实时了解桶存储容量和对象数量的场景。
+
+```go
+output, err := obsClient.GetBucketStorageInfo("my-bucket")
+if err != nil {
+    log.Printf("获取存量信息失败: %v", err)
+    return
+}
+
+// 计算存储使用率
+totalSize := output.Size
+quota := 10 * 1024 * 1024 * 1024 // 10GB
+usageRate := float64(totalSize) / float64(quota) * 100
+
+log.Printf("存储使用率: %.2f%%", usageRate)
+if usageRate > 80 {
+    log.Printf("警告：存储空间即将用尽")
+}
+```
+
+**场景 2：按存储类型分析存储分布**
+
+适用于需要分析不同存储类型对象分布的场景。
+
+```go
+output, err := obsClient.GetBucketStorageInfo("my-bucket")
+if err != nil {
+    log.Printf("获取存量信息失败: %v", err)
+    return
+}
+
+// 统计各存储类型的占比
+standardRatio := float64(output.Standard.Size) / float64(output.Size) * 100
+warmRatio := float64(output.Warm.Size) / float64(output.Size) * 100
+coldRatio := float64(output.Cold.Size) / float64(output.Size) * 100
+
+log.Printf("存储类型分布：")
+log.Printf("  标准存储: %.2f%%", standardRatio)
+log.Printf("  低频存储: %.2f%%", warmRatio)
+log.Printf("  归档存储: %.2f%%", coldRatio)
+```
 
 ---
 

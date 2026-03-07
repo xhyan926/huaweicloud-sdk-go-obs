@@ -587,6 +587,16 @@ func TestGetBucketStorageInfo_ShouldReturnInfo_WhenSuccess(t *testing.T) {
 	assert.Equal(t, 100, output.ObjectNumber)
 }
 
+func TestGetBucketStorageInfo_ShouldReturnError_WhenEmptyBucket(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint)
+
+	output, err := client.GetBucketStorageInfo("")
+
+	require.Error(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}
+
 // ==================== GetBucketLocation Tests ====================
 
 func TestGetBucketLocation_ShouldReturnLocation_WhenSignatureObs(t *testing.T) {
