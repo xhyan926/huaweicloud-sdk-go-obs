@@ -135,6 +135,9 @@ const (
 
 	// SubResourceReplication subResource value: replication
 	SubResourceReplication SubResourceType = "replication"
+
+	// SubResourceDirectcoldaccess subResource value: directcoldaccess
+	SubResourceDirectcoldaccess SubResourceType = "directcoldaccess"
 )
 
 // objectKeyType defines the objectKey value

@@ -7,6 +7,7 @@
 - [获取桶存量信息](#获取桶存量信息)
 - [桶清单管理](#桶清单管理)
 - [跨区域复制](#跨区域复制)
+- [归档存储对象直读](#归档存储对象直读)
 
 ---
 
@@ -945,6 +946,275 @@ fmt.Println("跨区域复制配置已删除")
 
 ---
 
+## 归档存储对象直读
+
+归档对象直读功能允许用户直接下载归档存储的对象，而无需先进行恢复操作。这可以简化归档对象的访问流程，提高访问效率。
+
+### SetBucketDirectColdAccess
+
+设置桶的归档对象直读配置。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) SetBucketDirectColdAccess(input *SetBucketDirectColdAccessInput, extensions ...extensionOptions) (output *BaseModel, err error)
+```
+
+#### 参数说明
+
+**SetBucketDirectColdAccessInput**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| Bucket | string | 是 | 桶名 |
+| Enabled | bool | 是 | 是否启用归档对象直读 |
+
+#### 返回值
+
+**BaseModel**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| StatusCode | int | HTTP 状态码 |
+| RequestId | string | 请求 ID |
+
+#### 使用示例
+
+```go
+package main
+
+import (
+    "fmt"
+    obs "github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+)
+
+func main() {
+    // 创建客户端
+    obsClient, err := obs.New("your-ak", "your-sk", "https://obs.cn-north-4.myhuaweicloud.com")
+    if err != nil {
+        panic(err)
+    }
+
+    // 启用归档对象直读
+    input := &obs.SetBucketDirectColdAccessInput{
+        Bucket:  "my-bucket",
+        Enabled: true,
+    }
+
+    output, err := obsClient.SetBucketDirectColdAccess(input)
+    if err != nil {
+        fmt.Printf("设置归档直读失败: %v\n", err)
+        return
+    }
+
+    fmt.Printf("设置归档直读成功，RequestId: %s\n", output.RequestId)
+}
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+
+#### 注意事项
+
+1. 启用归档直读后，归档对象可以直接下载，无需恢复
+2. 归档直读可能会产生额外的费用，请根据实际业务需求选择是否启用
+3. 只有桶的所有者或具有相应权限的用户才能设置归档直读
+
+#### 使用场景
+
+**场景 1：启用归档直读以提高访问效率**
+
+适用于需要频繁访问归档对象但希望避免恢复操作的场景。
+
+```go
+input := &obs.SetBucketDirectColdAccessInput{
+    Bucket:  "archive-bucket",
+    Enabled: true,
+}
+
+output, err := obsClient.SetBucketDirectColdAccess(input)
+if err != nil {
+    log.Printf("启用归档直读失败: %v", err)
+    return
+}
+log.Printf("归档直读已启用")
+```
+
+**场景 2：禁用归档直读以降低成本**
+
+适用于需要控制成本或不常访问归档对象的场景。
+
+```go
+input := &obs.SetBucketDirectColdAccessInput{
+    Bucket:  "archive-bucket",
+    Enabled: false,
+}
+
+output, err := obsClient.SetBucketDirectColdAccess(input)
+if err != nil {
+    log.Printf("禁用归档直读失败: %v", err)
+    return
+}
+log.Printf("归档直读已禁用")
+```
+
+---
+
+### GetBucketDirectColdAccess
+
+获取桶的归档对象直读配置。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) GetBucketDirectColdAccess(bucketName string, extensions ...extensionOptions) (output *GetBucketDirectColdAccessOutput, err error)
+```
+
+#### 参数说明
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| bucketName | string | 是 | 桶名 |
+
+#### 返回值
+
+**GetBucketDirectColdAccessOutput**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| BaseModel | - | 基础响应信息 |
+| Enabled | bool | 是否启用归档对象直读 |
+
+#### 使用示例
+
+```go
+output, err := obsClient.GetBucketDirectColdAccess("my-bucket")
+if err != nil {
+    fmt.Printf("获取归档直读配置失败: %v\n", err)
+    return
+}
+
+fmt.Printf("归档直读状态: %v\n", output.Enabled)
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+
+#### 使用场景
+
+**场景：查询并判断归档直读状态**
+
+适用于需要查询归档直读配置并进行条件判断的场景。
+
+```go
+output, err := obsClient.GetBucketDirectColdAccess("my-bucket")
+if err != nil {
+    log.Printf("获取归档直读配置失败: %v", err)
+    return
+}
+
+// 判断归档直读是否启用
+if output.Enabled {
+    log.Println("归档直读已启用，归档对象可直接访问")
+} else {
+    log.Println("归档直读未启用，归档对象需要先恢复")
+}
+```
+
+---
+
+### DeleteBucketDirectColdAccess
+
+删除桶的归档对象直读配置。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) DeleteBucketDirectColdAccess(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error)
+```
+
+#### 参数说明
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| bucketName | string | 是 | 桶名 |
+
+#### 返回值
+
+**BaseModel**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| StatusCode | int | HTTP 状态码 |
+| RequestId | string | 请求 ID |
+
+#### 使用示例
+
+```go
+output, err := obsClient.DeleteBucketDirectColdAccess("my-bucket")
+if err != nil {
+    fmt.Printf("删除归档直读配置失败: %v\n", err)
+    return
+}
+
+fmt.Printf("删除归档直读配置成功，RequestId: %s\n", output.RequestId)
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+
+#### 注意事项
+
+1. 删除归档直读配置后，归档对象需要先恢复才能下载
+2. 已下载的对象不受影响
+3. 建议在删除前确认所有需要的访问已完成
+
+#### 使用场景
+
+**场景：安全删除归档直读配置**
+
+适用于需要在删除前确认归档直读配置状态并提醒用户的场景。
+
+```go
+// 先查询归档直读配置
+output, err := obsClient.GetBucketDirectColdAccess("my-bucket")
+if err != nil {
+    log.Printf("归档直读配置不存在或获取失败: %v", err)
+    return
+}
+
+// 检查是否已启用
+if output.Enabled {
+    log.Println("注意：删除归档直读配置后，归档对象将需要先恢复才能下载")
+}
+
+// 删除归档直读配置
+_, err = obsClient.DeleteBucketDirectColdAccess("my-bucket")
+if err != nil {
+    log.Printf("删除失败: %v", err)
+    return
+}
+
+log.Println("归档直读配置已删除")
+```
+
+---
+
 ## 常量定义
 
 ### 桶清单相关常量
@@ -989,6 +1259,13 @@ const (
 )
 ```
 
+#### 归档直读相关子资源常量
+```go
+const (
+    SubResourceDirectcoldaccess = "directcoldaccess"  // 归档对象直读子资源
+)
+```
+
 ---
 
 ## 相关文档
@@ -1000,6 +1277,6 @@ const (
 
 ---
 
-**文档版本**: 1.1
+**文档版本**: 1.2
 **更新日期**: 2026-03-07
 **SDK 版本**: 3.25.9+

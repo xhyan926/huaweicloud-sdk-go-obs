@@ -66,9 +66,16 @@
 ### 阶段三：低优先级功能（远期实施）
 
 #### 任务组 6：桶归档存储对象直读
-23. [子任务 6.1 - 归档直读数据模型和常量](subtasks/task-23/TASK.md)
-24. [子任务 6.2 - 归档直读实现](subtasks/task-24/TASK.md)
-25. [子任务 6.3 - 归档直读单元测试](subtasks/task-25/TASK.md)
+23. [x 子任务 6.1 - 归档直读数据模型和常量](subtasks/task-23/TASK.md) ✅
+24. [x 子任务 6.2 - 归档直读实现](subtasks/task-24/TASK.md) ✅
+25. [x 子任务 6.3 - 归档直读单元测试](subtasks/task-25/TASK.md) ✅
+
+**完成总结** (2026-03-07):
+- ✅ 数据模型已更新，支持 Set/Get/DeleteBucketDirectColdAccess
+- ✅ API 方法已实现：SetBucketDirectColdAccess、GetBucketDirectColdAccess、DeleteBucketDirectColdAccess
+- ✅ 参数验证已添加：空桶名称检查、nil 输入检查
+- ✅ 单元测试已编写并通过
+- ✅ 测试覆盖率：SetBucketDirectColdAccess (88.9%)、GetBucketDirectColdAccess (85.7%)、DeleteBucketDirectColdAccess (85.7%)
 
 #### 任务组 7：DIS 通知策略
 26. [子任务 7.1 - DIS 策略数据模型和常量](subtasks/task-26/TASK.md)
@@ -109,7 +116,7 @@
   - ✅ 参数验证已添加
 
 ### 阶段三：低优先级功能（10 天）
-- [ ] 任务组 6：桶归档存储对象直读（2.5 天）
+- [x] 任务组 6：桶归档存储对象直读（2.5 天）✅ 已完成
 - [ ] 任务组 7：DIS 通知策略（2.5 天）
 - [ ] 任务组 8：在线解压策略（2.5 天）
 - [ ] 任务组 9：桶级 WORM 策略（2.5 天）

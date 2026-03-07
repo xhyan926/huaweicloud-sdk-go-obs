@@ -563,3 +563,20 @@ type GetBucketReplicationInput struct {
 type DeleteBucketReplicationInput struct {
 	Bucket string
 }
+
+// SetBucketDirectColdAccessInput is input parameter of SetBucketDirectColdAccess function
+type SetBucketDirectColdAccessInput struct {
+	Bucket  string `xml:"-"`
+	Enabled bool   `xml:"Enabled"`
+}
+
+// GetBucketDirectColdAccessOutput is result of GetBucketDirectColdAccess function
+type GetBucketDirectColdAccessOutput struct {
+	BaseModel
+	Enabled bool `xml:"Enabled"`
+}
+
+// DeleteBucketDirectColdAccessInput is input parameter of DeleteBucketDirectColdAccess function
+type DeleteBucketDirectColdAccessInput struct {
+	Bucket string `xml:"-"`
+}

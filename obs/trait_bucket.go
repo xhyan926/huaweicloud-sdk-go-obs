@@ -13,6 +13,7 @@
 package obs
 
 import (
+	"encoding/xml"
 	"fmt"
 	"strings"
 )
@@ -394,5 +395,17 @@ func (input GetBucketReplicationInput) trans(isObs bool) (params map[string]stri
 
 func (input DeleteBucketReplicationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
 	params = map[string]string{string(SubResourceReplication): ""}
+	return
+}
+
+func (input SetBucketDirectColdAccessInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	config := &struct {
+		XMLName xml.Name `xml:"DirectColdAccessConfiguration"`
+		Enabled bool     `xml:"Enabled"`
+	}{
+		Enabled: input.Enabled,
+	}
+	params = map[string]string{string(SubResourceDirectcoldaccess): ""}
+	data, err = ConvertRequestToIoReader(config)
 	return
 }

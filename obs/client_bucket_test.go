@@ -2240,3 +2240,155 @@ func TestDeleteBucketReplication_ShouldReturnError_GivenEmptyBucket(t *testing.T
 	require.Nil(t, output)
 	assert.Contains(t, err.Error(), "bucketName is empty")
 }
+
+// ==================== SetBucketDirectColdAccess Tests ====================
+
+func TestSetBucketDirectColdAccess_ShouldSetDirectColdAccess_WhenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "PUT", req.Method)
+			assert.Equal(t, "/?directcoldaccess", req.URL.RequestURI())
+			return CreateTestHTTPResponse(200, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	input := &SetBucketDirectColdAccessInput{
+		Bucket:  "test-bucket",
+		Enabled: true,
+	}
+
+	output, err := client.SetBucketDirectColdAccess(input)
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestSetBucketDirectColdAccess_ShouldReturnError_WhenInputNil(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.SetBucketDirectColdAccess(nil)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "SetBucketDirectColdAccessInput is nil")
+}
+
+func TestSetBucketDirectColdAccess_ShouldReturnError_WhenBucketEmpty(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	input := &SetBucketDirectColdAccessInput{
+		Bucket:  "",
+		Enabled: true,
+	}
+
+	output, err := client.SetBucketDirectColdAccess(input)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucket is empty")
+}
+
+// ==================== GetBucketDirectColdAccess Tests ====================
+
+func TestGetBucketDirectColdAccess_ShouldReturnDirectColdAccess_WhenEnabled(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	directColdAccessXML := `<?xml version="1.0" encoding="UTF-8"?>
+<DirectColdAccessConfiguration>
+	<Enabled>true</Enabled>
+</DirectColdAccessConfiguration>`
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "GET", req.Method)
+			assert.Equal(t, "/?directcoldaccess", req.URL.RequestURI())
+			return CreateTestHTTPResponse(200, directColdAccessXML, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.GetBucketDirectColdAccess("test-bucket")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.True(t, output.Enabled)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestGetBucketDirectColdAccess_ShouldReturnDirectColdAccess_WhenDisabled(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	directColdAccessXML := `<?xml version="1.0" encoding="UTF-8"?>
+<DirectColdAccessConfiguration>
+	<Enabled>false</Enabled>
+</DirectColdAccessConfiguration>`
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "GET", req.Method)
+			assert.Equal(t, "/?directcoldaccess", req.URL.RequestURI())
+			return CreateTestHTTPResponse(200, directColdAccessXML, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.GetBucketDirectColdAccess("test-bucket")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.False(t, output.Enabled)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestGetBucketDirectColdAccess_ShouldReturnError_WhenBucketEmpty(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.GetBucketDirectColdAccess("")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}
+
+// ==================== DeleteBucketDirectColdAccess Tests ====================
+
+func TestDeleteBucketDirectColdAccess_ShouldDeleteDirectColdAccess_WhenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "DELETE", req.Method)
+			assert.Equal(t, "/?directcoldaccess", req.URL.RequestURI())
+			return CreateTestHTTPResponse(204, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.DeleteBucketDirectColdAccess("test-bucket")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestDeleteBucketDirectColdAccess_ShouldReturnError_WhenBucketEmpty(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.DeleteBucketDirectColdAccess("")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}

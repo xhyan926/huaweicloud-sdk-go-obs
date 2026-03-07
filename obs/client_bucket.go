@@ -976,3 +976,55 @@ func (obsClient ObsClient) DeleteBucketReplication(bucketName string, extensions
 	}
 	return
 }
+
+// SetBucketDirectColdAccess sets bucket direct cold access.
+//
+// You can use this API to set direct cold access for a bucket.
+// When enabled, archived objects can be downloaded without restore.
+func (obsClient ObsClient) SetBucketDirectColdAccess(input *SetBucketDirectColdAccessInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetBucketDirectColdAccessInput is nil")
+	}
+	if input.Bucket == "" {
+		return nil, errors.New("SetBucketDirectColdAccessInput: bucket is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetBucketDirectColdAccess", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketDirectColdAccess gets bucket direct cold access configuration.
+//
+// You can use this API to get the direct cold access configuration of a bucket.
+func (obsClient ObsClient) GetBucketDirectColdAccess(bucketName string, extensions ...extensionOptions) (output *GetBucketDirectColdAccessOutput, err error) {
+	if bucketName == "" {
+		return nil, errors.New("GetBucketDirectColdAccess: bucketName is empty")
+	}
+
+	output = &GetBucketDirectColdAccessOutput{}
+	err = obsClient.doActionWithBucket("GetBucketDirectColdAccess", HTTP_GET, bucketName, newSubResourceSerial(SubResourceDirectcoldaccess), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketDirectColdAccess deletes bucket direct cold access configuration.
+//
+// You can use this API to delete the direct cold access configuration of a bucket.
+func (obsClient ObsClient) DeleteBucketDirectColdAccess(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if bucketName == "" {
+		return nil, errors.New("DeleteBucketDirectColdAccess: bucketName is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("DeleteBucketDirectColdAccess", HTTP_DELETE, bucketName, newSubResourceSerial(SubResourceDirectcoldaccess), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}

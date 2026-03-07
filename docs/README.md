@@ -33,6 +33,10 @@ docs/
   - [SetBucketReplication](./bucket/README.md#setbucketreplication) - 设置桶的跨区域复制配置
   - [GetBucketReplication](./bucket/README.md#getbucketreplication) - 获取桶的跨区域复制配置
   - [DeleteBucketReplication](./bucket/README.md#deletebucketreplication) - 删除桶的跨区域复制配置
+- [归档存储对象直读](./bucket/README.md#归档存储对象直读)
+- [SetBucketDirectColdAccess](./bucket/README.md#setbucketdirectcoldaccess) - 设置桶的归档对象直读配置
+- [GetBucketDirectColdAccess](./bucket/README.md#getbucketdirectcoldaccess) - 获取桶的归档对象直读配置
+- [DeleteBucketDirectColdAccess](./bucket/README.md#deletebucketdirectcoldaccess) - 删除桶的归档对象直读配置
 
 ### 对象操作 (object/)
 
@@ -192,4 +196,4 @@ SDK 中的 API 方法命名遵循以下规范：
 
 ---
 
-**最后更新**: 2026-03-07 (任务组 2：POST 上传策略重构完成)
+**最后更新**: 2026-03-07 (任务组 6：桶归档存储对象直读完成)
