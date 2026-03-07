@@ -132,6 +132,9 @@ const (
 
 	// SubResourceInventory subResource value: inventory
 	SubResourceInventory SubResourceType = "inventory"
+
+	// SubResourceReplication subResource value: replication
+	SubResourceReplication SubResourceType = "replication"
 )
 
 // objectKeyType defines the objectKey value
@@ -237,6 +240,17 @@ const (
 
 	// VersioningStatusSuspended version status: Suspended
 	VersioningStatusSuspended VersioningStatusType = "Suspended"
+)
+
+// ReplicationStatusType defines bucket replication status
+type ReplicationStatusType string
+
+const (
+	// ReplicationStatusEnabled replication status: Enabled
+	ReplicationStatusEnabled ReplicationStatusType = "Enabled"
+
+	// ReplicationStatusDisabled replication status: Disabled
+	ReplicationStatusDisabled ReplicationStatusType = "Disabled"
 )
 
 // ProtocolType defines protocol type

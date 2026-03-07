@@ -29,6 +29,10 @@ docs/
   - [GetBucketInventory](./bucket/README.md#getbucketinventory) - 获取桶清单配置
   - [ListBucketInventory](./bucket/README.md#listbucketinventory) - 列举桶清单配置
   - [DeleteBucketInventory](./bucket/README.md#deletebucketinventory) - 删除桶清单配置
+- [跨区域复制](./bucket/README.md#跨区域复制)
+  - [SetBucketReplication](./bucket/README.md#setbucketreplication) - 设置桶的跨区域复制配置
+  - [GetBucketReplication](./bucket/README.md#getbucketreplication) - 获取桶的跨区域复制配置
+  - [DeleteBucketReplication](./bucket/README.md#deletebucketreplication) - 删除桶的跨区域复制配置
 
 ### 对象操作 (object/)
 

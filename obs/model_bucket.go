@@ -504,3 +504,51 @@ type InventoryOptionalFields struct {
 	XMLName xml.Name `xml:"OptionalFields" json:"-"`
 	Fields  []string `xml:"Field,omitempty"`
 }
+
+// ReplicationDestination represents the destination bucket configuration for replication
+type ReplicationDestination struct {
+	Bucket       string `xml:"Bucket"`
+	StorageClass string `xml:"StorageClass,omitempty"`
+	DeleteData   string `xml:"DeleteData,omitempty"`
+}
+
+// ReplicationRule represents a single replication rule
+type ReplicationRule struct {
+	ID                          string                `xml:"ID,omitempty"`
+	Prefix                       string                `xml:"Prefix"`
+	Status                       string                `xml:"Status"`
+	Destination                  ReplicationDestination  `xml:"Destination"`
+	HistoricalObjectReplication string                 `xml:"HistoricalObjectReplication,omitempty"`
+}
+
+// ReplicationConfiguration represents the replication configuration for a bucket
+type ReplicationConfiguration struct {
+	XMLName xml.Name       `xml:"ReplicationConfiguration" json:"-"`
+	Agency  string            `xml:"Agency"`
+	Rules   []ReplicationRule `xml:"Rule"`
+}
+
+// SetBucketReplicationInput is input parameter of SetBucketReplication function
+type SetBucketReplicationInput struct {
+	Bucket  string
+	Agency  string
+	Rules   []ReplicationRule
+}
+
+// GetBucketReplicationOutput is result of GetBucketReplication function
+type GetBucketReplicationOutput struct {
+	BaseModel
+	XMLName                 xml.Name                  `xml:"ReplicationConfiguration"`
+	Agency                  string                    `xml:"Agency"`
+	Rules                   []ReplicationRule         `xml:"Rule"`
+}
+
+// GetBucketReplicationInput is input parameter of GetBucketReplication function
+type GetBucketReplicationInput struct {
+	Bucket string
+}
+
+// DeleteBucketReplicationInput is input parameter of DeleteBucketReplication function
+type DeleteBucketReplicationInput struct {
+	Bucket string
+}

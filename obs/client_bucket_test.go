@@ -2082,3 +2082,151 @@ func TestDeleteBucketInventory_ShouldReturnError_GivenNetworkFailure(t *testing.
 	require.NotNil(t, err)
 	require.Nil(t, output)
 }
+
+// ==================== Replication Tests ====================
+
+func TestSetBucketReplication_ShouldSetReplication_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "PUT", req.Method)
+			return CreateTestHTTPResponse(200, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	input := &SetBucketReplicationInput{
+		Bucket: "test-bucket",
+		Agency: "test-agency",
+		Rules: []ReplicationRule{
+			{
+				ID:      "rule1",
+				Prefix:   "test-prefix",
+				Status:   string(ReplicationStatusEnabled),
+				Destination: ReplicationDestination{
+					Bucket:       "destination-bucket",
+					StorageClass: string(StorageClassStandard),
+					DeleteData:   string(ReplicationStatusEnabled),
+				},
+			},
+		},
+	}
+
+	output, err := client.SetBucketReplication(input)
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestSetBucketReplication_ShouldReturnError_GivenNilInput(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.SetBucketReplication(nil)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "SetBucketReplicationInput is nil")
+}
+
+func TestSetBucketReplication_ShouldReturnError_GivenEmptyBucket(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	input := &SetBucketReplicationInput{
+		Bucket: "",
+		Agency: "test-agency",
+		Rules:  []ReplicationRule{},
+	}
+
+	output, err := client.SetBucketReplication(input)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucket is empty")
+}
+
+func TestGetBucketReplication_ShouldReturnReplication_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	replicationXML := `<?xml version="1.0" encoding="UTF-8"?>
+<ReplicationConfiguration>
+	<Agency>test-agency</Agency>
+	<Rule>
+		<ID>rule1</ID>
+		<Prefix>test-prefix</Prefix>
+		<Status>Enabled</Status>
+		<Destination>
+			<Bucket>destination-bucket</Bucket>
+			<StorageClass>STANDARD</StorageClass>
+			<DeleteData>Enabled</DeleteData>
+		</Destination>
+		<HistoricalObjectReplication>Enabled</HistoricalObjectReplication>
+	</Rule>
+</ReplicationConfiguration>`
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "GET", req.Method)
+			return CreateTestHTTPResponse(200, replicationXML, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.GetBucketReplication("test-bucket")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-agency", output.Agency)
+	assert.Len(t, output.Rules, 1)
+	assert.Equal(t, "rule1", output.Rules[0].ID)
+	assert.Equal(t, "test-prefix", output.Rules[0].Prefix)
+	assert.Equal(t, "Enabled", output.Rules[0].Status)
+	assert.Equal(t, "destination-bucket", output.Rules[0].Destination.Bucket)
+	assert.Equal(t, "STANDARD", output.Rules[0].Destination.StorageClass)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestGetBucketReplication_ShouldReturnError_GivenEmptyBucket(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.GetBucketReplication("")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}
+
+func TestDeleteBucketReplication_ShouldDeleteReplication_GivenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "DELETE", req.Method)
+			return CreateTestHTTPResponse(204, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.DeleteBucketReplication("test-bucket")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestDeleteBucketReplication_ShouldReturnError_GivenEmptyBucket(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.DeleteBucketReplication("")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}

@@ -5,6 +5,7 @@
 ## 目录
 
 - [桶清单管理](#桶清单管理)
+- [跨区域复制](#跨区域复制)
 
 ---
 
@@ -162,6 +163,57 @@ func main() {
 3. 每个桶最多支持 1000 个清单配置
 4. 清单报告生成可能需要一定时间
 
+#### 使用场景
+
+**场景 1：每日完整清单报告**
+
+适用于需要每天了解桶内所有对象变化情况的场景。
+
+```go
+input := &obs.SetBucketInventoryInput{
+    Bucket: "my-bucket",
+    InventoryConfiguration: obs.InventoryConfiguration{
+        Id:        "daily-full-inventory",
+        IsEnabled: true,
+        Destination: obs.InventoryDestination{
+            Format: "CSV",
+            Bucket: "report-bucket",
+            Prefix: "daily-reports/",
+        },
+        Schedule: obs.InventorySchedule{
+            Frequency: obs.InventoryFrequencyDaily,
+        },
+        IncludedObjectVersions: "All",
+    },
+}
+```
+
+**场景 2：按前缀筛选的清单报告**
+
+适用于需要根据对象前缀分类生成清单报告的场景。
+
+```go
+input := &obs.SetBucketInventoryInput{
+    Bucket: "my-bucket",
+    InventoryConfiguration: obs.InventoryConfiguration{
+        Id:        "prefix-inventory",
+        IsEnabled: true,
+        Destination: obs.InventoryDestination{
+            Format: "CSV",
+            Bucket: "report-bucket",
+            Prefix: "prefix-reports/",
+        },
+        Schedule: obs.InventorySchedule{
+            Frequency: obs.InventoryFrequencyWeekly,
+        },
+        Filter: &obs.InventoryFilter{
+            Prefix: "documents/",
+        },
+        IncludedObjectVersions: "Current",
+    },
+}
+```
+
 ---
 
 ### GetBucketInventory
@@ -213,6 +265,29 @@ fmt.Printf("调度频率: %s\n", output.InventoryConfiguration.Schedule.Frequenc
 | NoSuchBucket | 404 | 桶不存在 |
 | NoSuchInventoryConfiguration | 404 | 清单配置不存在 |
 
+#### 使用场景
+
+**场景：查询并判断清单配置**
+
+适用于需要查询特定清单规则配置并进行条件判断的场景。
+
+```go
+output, err := obsClient.GetBucketInventory("my-bucket", "daily-inventory")
+if err != nil {
+    return
+}
+
+// 判断清单是否启用
+if output.InventoryConfiguration.IsEnabled {
+    fmt.Println("清单已启用")
+    fmt.Printf("报告存储在: %s/%s\n",
+        output.InventoryConfiguration.Destination.Bucket,
+        output.InventoryConfiguration.Destination.Prefix)
+} else {
+    fmt.Println("清单已禁用")
+}
+```
+
 ---
 
 ### ListBucketInventory
@@ -262,6 +337,34 @@ for i, config := range output.InventoryConfigurations {
 | InvalidBucketName | 400 | 桶名无效 |
 | AccessDenied | 403 | 权限不足 |
 | NoSuchBucket | 404 | 桶不存在 |
+
+#### 使用场景
+
+**场景：批量管理清单配置**
+
+适用于需要查看所有清单规则并进行批量管理的场景。
+
+```go
+output, err := obsClient.ListBucketInventory("my-bucket")
+if err != nil {
+    return
+}
+
+// 统计启用和禁用的清单数量
+enabledCount := 0
+disabledCount := 0
+
+for _, config := range output.InventoryConfigurations {
+    if config.IsEnabled {
+        enabledCount++
+    } else {
+        disabledCount++
+    }
+}
+
+fmt.Printf("启用的清单: %d\n", enabledCount)
+fmt.Printf("禁用的清单: %d\n", disabledCount)
+```
 
 ---
 
@@ -317,11 +420,394 @@ fmt.Printf("删除桶清单成功，RequestId: %s\n", output.RequestId)
 1. 删除清单配置不会删除已生成的清单报告
 2. 建议先禁用清单配置，等待当前报告生成完成后再删除
 
+#### 使用场景
+
+**场景：安全删除清单配置**
+
+适用于需要在删除前确认清单配置存在且已禁用的场景。
+
+```go
+// 先查询清单配置
+output, err := obsClient.GetBucketInventory("my-bucket", "daily-inventory")
+if err != nil {
+    fmt.Printf("清单配置不存在或获取失败: %v\n", err)
+    return
+}
+
+// 检查是否已禁用
+if output.InventoryConfiguration.IsEnabled {
+    fmt.Println("请先禁用清单配置再删除")
+    return
+}
+
+// 删除清单配置
+_, err = obsClient.DeleteBucketInventory("my-bucket", "daily-inventory")
+if err != nil {
+    fmt.Printf("删除失败: %v\n", err)
+    return
+}
+
+fmt.Println("清单配置已安全删除")
+```
+
+---
+
+## 跨区域复制
+
+跨区域复制功能允许在不同区域之间自动复制对象，实现数据的异地容灾。
+
+### SetBucketReplication
+
+设置桶的跨区域复制配置。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) SetBucketReplication(input *SetBucketReplicationInput, extensions ...extensionOptions) (output *BaseModel, err error)
+```
+
+#### 参数说明
+
+**SetBucketReplicationInput**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| Bucket | string | 是 | 源桶名 |
+| Agency | string | 是 | IAM 委托名称 |
+| Rules | []ReplicationRule | 是 | 复制规则列表 |
+
+**ReplicationRule**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| ID | string | 否 | 规则 ID |
+| Prefix | string | 是 | 对象前缀 |
+| Status | string | 是 | 规则状态，Enabled 或 Disabled |
+| Destination | ReplicationDestination | 是 | 目标配置 |
+| HistoricalObjectReplication | string | 否 | 历史对象复制 |
+
+**ReplicationDestination**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| Bucket | string | 是 | 目标桶名 |
+| StorageClass | string | 否 | 目标存储类型 |
+| DeleteData | string | 否 | 删除数据同步 |
+
+#### 返回值
+
+**BaseModel**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| StatusCode | int | HTTP 状态码 |
+| RequestId | string | 请求 ID |
+
+#### 使用示例
+
+```go
+package main
+
+import (
+    "fmt"
+    obs "github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+)
+
+func main() {
+    // 创建客户端
+    obsClient, err := obs.New("your-ak", "your-sk", "https://obs.cn-north-4.myhuaweicloud.com")
+    if err != nil {
+        panic(err)
+    }
+
+    // 设置跨区域复制配置
+    input := &obs.SetBucketReplicationInput{
+        Bucket: "source-bucket",
+        Agency: "your-agency-name",
+        Rules: []obs.ReplicationRule{
+            {
+                ID:    "rule-1",
+                Prefix: "documents/",
+                Status: string(obs.ReplicationStatusEnabled),
+                Destination: obs.ReplicationDestination{
+                    Bucket:       "dest-bucket",
+                    StorageClass: "STANDARD",
+                },
+            },
+        },
+    }
+
+    output, err := obsClient.SetBucketReplication(input)
+    if err != nil {
+        fmt.Printf("设置跨区域复制失败: %v\n", err)
+        return
+    }
+
+    fmt.Printf("设置跨区域复制成功，RequestId: %s\n", output.RequestId)
+}
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+| MalformedXML | 400 | XML 格式错误 |
+| InvalidArgument | 400 | 参数错误 |
+
+#### 注意事项
+
+1. 目标桶必须存在且在不同区域
+2. 必须先创建 IAM 委托并授权
+3. 复制规则的前缀不能重叠
+4. 同一桶内最多支持 100 条复制规则
+
+#### 使用场景
+
+**场景 1：跨区域数据容灾**
+
+适用于需要在不同区域之间复制数据以实现容灾的场景。
+
+```go
+input := &obs.SetBucketReplicationInput{
+    Bucket: "source-bucket",
+    Agency: "disaster-recovery-agency",
+    Rules: []obs.ReplicationRule{
+        {
+            ID:    "dr-rule",
+            Prefix: "",
+            Status: string(obs.ReplicationStatusEnabled),
+            Destination: obs.ReplicationDestination{
+                Bucket:       "dest-bucket",
+                StorageClass: "STANDARD",
+            },
+        },
+    },
+}
+```
+
+**场景 2：按前缀选择性复制**
+
+适用于只需要复制特定前缀对象的场景。
+
+```go
+input := &obs.SetBucketReplicationInput{
+    Bucket: "source-bucket",
+    Agency: "selective-replication-agency",
+    Rules: []obs.ReplicationRule{
+        {
+            ID:    "important-docs",
+            Prefix: "important/",
+            Status: string(obs.ReplicationStatusEnabled),
+            Destination: obs.ReplicationDestination{
+                Bucket:       "backup-bucket",
+                StorageClass: "STANDARD_IA",
+            },
+        },
+    },
+}
+```
+
+---
+
+### GetBucketReplication
+
+获取桶的跨区域复制配置。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) GetBucketReplication(input *GetBucketReplicationInput) (output *GetBucketReplicationOutput, err error)
+```
+
+#### 参数说明
+
+**GetBucketReplicationInput**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| Bucket | string | 是 | 桶名 |
+
+#### 返回值
+
+**GetBucketReplicationOutput**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| BaseModel | - | 基础响应信息 |
+| Agency | string | IAM 委托名称 |
+| Rules | []ReplicationRule | 复制规则列表 |
+
+#### 使用示例
+
+```go
+output, err := obsClient.GetBucketReplication(&obs.GetBucketReplicationInput{
+    Bucket: "source-bucket",
+})
+if err != nil {
+    fmt.Printf("获取跨区域复制配置失败: %v\n", err)
+    return
+}
+
+fmt.Printf("IAM 委托: %s\n", output.Agency)
+fmt.Printf("复制规则数量: %d\n", len(output.Rules))
+for i, rule := range output.Rules {
+    fmt.Printf("%d. 规则 ID: %s, 前缀: %s, 状态: %s\n",
+        i+1, rule.ID, rule.Prefix, rule.Status)
+}
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+| ReplicationConfigurationNotFoundError | 404 | 复制配置不存在 |
+
+#### 使用场景
+
+**场景：分析复制规则状态**
+
+适用于需要查看所有复制规则并分析其状态的场景。
+
+```go
+output, err := obsClient.GetBucketReplication(&obs.GetBucketReplicationInput{
+    Bucket: "source-bucket",
+})
+if err != nil {
+    return
+}
+
+// 分析复制规则状态
+enabledRules := 0
+disabledRules := 0
+
+for _, rule := range output.Rules {
+    if rule.Status == string(obs.ReplicationStatusEnabled) {
+        enabledRules++
+    } else {
+        disabledRules++
+    }
+}
+
+fmt.Printf("启用的规则: %d\n", enabledRules)
+fmt.Printf("禁用的规则: %d\n", disabledRules)
+fmt.Printf("目标桶: ")
+for i, rule := range output.Rules {
+    if i > 0 {
+        fmt.Print(", ")
+    }
+    fmt.Printf("%s (%s)", rule.Destination.Bucket, rule.Prefix)
+}
+fmt.Println()
+```
+
+---
+
+### DeleteBucketReplication
+
+删除桶的跨区域复制配置。
+
+#### 方法签名
+
+```go
+func (obsClient ObsClient) DeleteBucketReplication(input *DeleteBucketReplicationInput, extensions ...extensionOptions) (output *BaseModel, err error)
+```
+
+#### 参数说明
+
+**DeleteBucketReplicationInput**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| Bucket | string | 是 | 桶名 |
+
+#### 返回值
+
+**BaseModel**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| StatusCode | int | HTTP 状态码 |
+| RequestId | string | 请求 ID |
+
+#### 使用示例
+
+```go
+output, err := obsClient.DeleteBucketReplication(&obs.DeleteBucketReplicationInput{
+    Bucket: "source-bucket",
+})
+if err != nil {
+    fmt.Printf("删除跨区域复制配置失败: %v\n", err)
+    return
+}
+
+fmt.Printf("删除跨区域复制配置成功，RequestId: %s\n", output.RequestId)
+```
+
+#### 错误码
+
+| 错误码 | HTTP 状态码 | 说明 |
+|--------|-------------|------|
+| InvalidBucketName | 400 | 桶名无效 |
+| AccessDenied | 403 | 权限不足 |
+| NoSuchBucket | 404 | 桶不存在 |
+
+#### 注意事项
+
+1. 删除复制配置会停止所有复制任务
+2. 已复制到目标桶的数据不会自动删除
+3. 建议先确认所有复制任务完成后再删除配置
+
+#### 使用场景
+
+**场景：安全删除复制配置**
+
+适用于需要在删除前确认复制配置状态并提醒用户的场景。
+
+```go
+// 先查询复制配置
+output, err := obsClient.GetBucketReplication(&obs.GetBucketReplicationInput{
+    Bucket: "source-bucket",
+})
+if err != nil {
+    fmt.Printf("复制配置不存在或获取失败: %v\n", err)
+    return
+}
+
+// 显示将要删除的配置
+fmt.Println("即将删除以下跨区域复制配置:")
+fmt.Printf("IAM 委托: %s\n", output.Agency)
+for i, rule := range output.Rules {
+    fmt.Printf("%d. 源前缀: %s -> 目标桶: %s\n",
+        i+1, rule.Prefix, rule.Destination.Bucket)
+}
+
+fmt.Println("\n注意: 已复制的数据将保留在目标桶中")
+
+// 删除复制配置
+_, err = obsClient.DeleteBucketReplication(&obs.DeleteBucketReplicationInput{
+    Bucket: "source-bucket",
+})
+if err != nil {
+    fmt.Printf("删除失败: %v\n", err)
+    return
+}
+
+fmt.Println("跨区域复制配置已删除")
+```
+
 ---
 
 ## 常量定义
 
-### 调度频率常量
+### 桶清单相关常量
+
+#### 调度频率常量
 
 ```go
 type InventoryFrequencyType string
@@ -332,7 +818,7 @@ const (
 )
 ```
 
-### 子资源常量
+#### 子资源常量
 
 ```go
 const (
@@ -340,79 +826,25 @@ const (
 )
 ```
 
----
+### 跨区域复制相关常量
 
-## 使用场景
-
-### 场景 1：每日完整清单报告
-
-适用于需要每天了解桶内所有对象变化情况的场景。
+#### 复制状态常量
 
 ```go
-input := &obs.SetBucketInventoryInput{
-    Bucket: "my-bucket",
-    InventoryConfiguration: obs.InventoryConfiguration{
-        Id:        "daily-full-inventory",
-        IsEnabled: true,
-        Destination: obs.InventoryDestination{
-            Format: "CSV",
-            Bucket: "report-bucket",
-            Prefix: "daily-reports/",
-        },
-        Schedule: obs.InventorySchedule{
-            Frequency: obs.InventoryFrequencyDaily,
-        },
-        IncludedObjectVersions: "All",
-    },
-}
+type ReplicationStatusType string
+
+const (
+    ReplicationStatusEnabled  ReplicationStatusType = "Enabled"   // 启用
+    ReplicationStatusDisabled ReplicationStatusType = "Disabled"  // 禁用
+)
 ```
 
-### 场景 2：按前缀筛选的清单报告
-
-适用于需要根据对象前缀分类生成清单报告的场景。
+#### 子资源常量
 
 ```go
-input := &obs.SetBucketInventoryInput{
-    Bucket: "my-bucket",
-    InventoryConfiguration: obs.InventoryConfiguration{
-        Id:        "prefix-inventory",
-        IsEnabled: true,
-        Destination: obs.InventoryDestination{
-            Format: "CSV",
-            Bucket: "report-bucket",
-            Prefix: "prefix-reports/",
-        },
-        Schedule: obs.InventorySchedule{
-            Frequency: obs.InventoryFrequencyWeekly,
-        },
-        Filter: &obs.InventoryFilter{
-            Prefix: "documents/",
-        },
-        IncludedObjectVersions: "Current",
-    },
-}
-```
-
-### 场景 3：禁用清单
-
-适用于临时停止清单报告生成的场景。
-
-```go
-input := &obs.SetBucketInventoryInput{
-    Bucket: "my-bucket",
-    InventoryConfiguration: obs.InventoryConfiguration{
-        Id:        "daily-inventory",
-        IsEnabled: false,  // 设置为 false 来禁用
-        Destination: obs.InventoryDestination{
-            Format: "CSV",
-            Bucket: "report-bucket",
-            Prefix: "daily-reports/",
-        },
-        Schedule: obs.InventorySchedule{
-            Frequency: obs.InventoryFrequencyDaily,
-        },
-    },
-}
+const (
+    SubResourceReplication = "replication"  // 跨区域复制子资源
+)
 ```
 
 ---
@@ -421,10 +853,11 @@ input := &obs.SetBucketInventoryInput{
 
 - [OBS API 文档](https://support.huaweicloud.com/api-obs/obs_04_0086.html)
 - [桶清单功能说明](https://support.huaweicloud.com/productdesc-obs/obs_04_0017.html)
-- [示例代码](../../examples/bucket_inventory_README.md)
+- [跨区域复制功能说明](https://support.huaweicloud.com/productdesc-obs/obs_04_0033.html)
+- [示例代码](../../examples/)
 
 ---
 
-**文档版本**: 1.0
-**更新日期**: 2026-03-06
+**文档版本**: 1.1
+**更新日期**: 2026-03-07
 **SDK 版本**: 3.25.9+

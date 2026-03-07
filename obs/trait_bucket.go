@@ -376,3 +376,23 @@ func (input SetBucketInventoryInput) trans(isObs bool) (params map[string]string
 	data, err = ConvertRequestToIoReader(input.InventoryConfiguration)
 	return
 }
+
+func (input SetBucketReplicationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	config := &ReplicationConfiguration{
+		Agency: input.Agency,
+		Rules:  input.Rules,
+	}
+	params = map[string]string{string(SubResourceReplication): ""}
+	data, err = ConvertRequestToIoReader(config)
+	return
+}
+
+func (input GetBucketReplicationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceReplication): ""}
+	return
+}
+
+func (input DeleteBucketReplicationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceReplication): ""}
+	return
+}

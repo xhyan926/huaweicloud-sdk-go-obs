@@ -920,3 +920,55 @@ func (obsClient ObsClient) DeleteBucketInventory(bucketName string, id string, e
 	}
 	return
 }
+
+// SetBucketReplication sets the cross-region replication configuration for a bucket.
+//
+// You can use this API to set cross-region replication for a bucket.
+// Cross-region replication automatically and asynchronously copies objects from a source bucket to a destination bucket in a different region.
+func (obsClient ObsClient) SetBucketReplication(input *SetBucketReplicationInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetBucketReplicationInput is nil")
+	}
+	if input.Bucket == "" {
+		return nil, errors.New("SetBucketReplicationInput: bucket is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetBucketReplication", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketReplication gets the cross-region replication configuration for a bucket.
+//
+// You can use this API to get the cross-region replication configuration for a bucket.
+func (obsClient ObsClient) GetBucketReplication(bucketName string, extensions ...extensionOptions) (output *GetBucketReplicationOutput, err error) {
+	if bucketName == "" {
+		return nil, errors.New("GetBucketReplication: bucketName is empty")
+	}
+
+	output = &GetBucketReplicationOutput{}
+	err = obsClient.doActionWithBucket("GetBucketReplication", HTTP_GET, bucketName, newSubResourceSerial(SubResourceReplication), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketReplication deletes the cross-region replication configuration for a bucket.
+//
+// You can use this API to delete the cross-region replication configuration for a bucket.
+func (obsClient ObsClient) DeleteBucketReplication(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if bucketName == "" {
+		return nil, errors.New("DeleteBucketReplication: bucketName is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("DeleteBucketReplication", HTTP_DELETE, bucketName, newSubResourceSerial(SubResourceReplication), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
