@@ -18,6 +18,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 // ListObjects lists objects in a bucket.
@@ -567,5 +568,90 @@ func (obsClient ObsClient) DeleteDirAccesslabel(input *DeleteDirAccesslabelInput
 	if err != nil {
 		output = nil
 	}
+	return
+}
+
+// CreatePostPolicy creates a POST upload policy with signature
+func (obsClient ObsClient) CreatePostPolicy(input *CreatePostPolicyInput) (output *CreatePostPolicyOutput, err error) {
+	if input == nil {
+		return nil, errors.New("CreatePostPolicyInput is nil")
+	}
+	if input.Bucket == "" {
+		return nil, errors.New("bucket is empty")
+	}
+	if input.Key == "" {
+		return nil, errors.New("key is empty")
+	}
+
+	sh := obsClient.getSecurity()
+
+	// 构建过期时间（使用 ExpiresIn 而不是 Expires）
+	var expiration string
+	if input.ExpiresIn > 0 {
+		expiration = BuildPostPolicyExpiration(input.ExpiresIn)
+	} else if input.Expires > 0 {
+		// 如果使用 Expires（绝对时间），需要转换为 ISO 8601 格式
+		expiration = time.Unix(input.Expires, 0).UTC().Format("2006-01-02T15:04:05.000Z")
+	} else {
+		// 默认 1 小时过期
+		expiration = BuildPostPolicyExpiration(3600)
+	}
+
+	// 构建 Policy 结构
+	policy := &PostPolicy{
+		Expiration: expiration,
+		Conditions: make([]PostPolicyCondition, 0),
+	}
+
+	// 添加用户提供的条件
+	if len(input.Conditions) > 0 {
+		policy.Conditions = append(policy.Conditions, input.Conditions...)
+	}
+
+	// 添加默认条件（桶和键）
+	bucketCond := CreateBucketCondition(input.Bucket)
+	keyCond := CreateKeyCondition(input.Key)
+	policy.Conditions = append(policy.Conditions, bucketCond, keyCond)
+
+	// 添加 ACL 条件（如果提供）
+	if input.Acl != "" {
+		aclCond := CreatePostPolicyCondition(PostPolicyOpEquals, "$acl", input.Acl)
+		policy.Conditions = append(policy.Conditions, aclCond)
+	}
+
+	// 验证 Policy
+	if err := ValidatePostPolicy(policy); err != nil {
+		return nil, err
+	}
+
+	// 生成 JSON
+	policyJSON, err := buildPostPolicyJSON(policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算签名
+	signature, err := CalculatePostPolicySignature(policyJSON, sh.sk)
+	if err != nil {
+		return nil, err
+	}
+
+	// Base64 编码 Policy
+	encodedPolicy := Base64Encode([]byte(policyJSON))
+
+	// 构建 Token
+	token := BuildPostPolicyToken(
+		sh.ak,
+		signature,
+		encodedPolicy,
+	)
+
+	output = &CreatePostPolicyOutput{
+		Policy:      encodedPolicy,
+		Signature:    signature,
+		Token:       token,
+		AccessKeyId: sh.ak,
+	}
+
 	return
 }

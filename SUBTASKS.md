@@ -21,11 +21,11 @@
 5. [x 子任务 1.5 - 桶清单单元测试](subtasks/task-05/TASK.md) ✅
 
 #### 任务组 2：POST 上传策略和签名生成
-6. [子任务 2.1 - POST 策略数据模型定义](subtasks/task-06/TASK.md)
-7. [子任务 2.2 - POST 策略构建和验证](subtasks/task-07/TASK.md)
-8. [子任务 2.3 - POST 签名计算](subtasks/task-08/TASK.md)
-9. [子任务 2.4 - POST 策略单元测试](subtasks/task-09/TASK.md)
-10. [子任务 2.5 - POST 上传示例代码](subtasks/task-10/TASK.md)
+6. [x 子任务 2.1 - POST 策略数据模型定义](subtasks/task-06/TASK.md) ✅
+7. [x 子任务 2.2 - POST 策略构建和验证](subtasks/task-07/TASK.md) ✅
+8. [x 子任务 2.3 - POST 签名计算](subtasks/task-08/TASK.md) ✅
+9. [x 子任务 2.4 - POST 策略单元测试](subtasks/task-09/TASK.md) ✅
+10. [x 子任务 2.5 - POST 上传示例代码](subtasks/task-10/TASK.md) ✅
 
 #### 任务组 3：参数完整性改进
 11. [子任务 3.1 - 创建桶参数补充](subtasks/task-11/TASK.md)
@@ -74,7 +74,9 @@
 ### 阶段一：高优先级功能（13.5 天）
 - [x] 任务组 1：桶清单功能（5 天）✅ 已完成，详见 `subtasks/task-group1-summary/ACCEPTANCE_REPORT.md`
   - ✅ API 接口文档已生成到 `docs/bucket/README.md`
-- [ ] 任务组 2：POST 上传策略（6 天）
+- [x] 任务组 2：POST 上传策略（6 天）✅ 已完成
+  - ✅ 所有子任务已完成
+  - ✅ 示例代码已创建
 - [ ] 任务组 3：参数完整性改进（2.5 天）
 
 ### 阶段二：中优先级功能（6.25 天）

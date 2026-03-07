@@ -13,6 +13,7 @@
 package obs
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"io"
 	"time"
@@ -430,4 +431,73 @@ type CallbackInput struct {
 	CallbackHost     string `json:"callbackHost,omitempty"`
 	CallbackBody     string `json:"callbackBody"`
 	CallbackBodyType string `json:"callbackBodyType,omitempty"`
+}
+
+// PostPolicyCondition defines a condition for POST policy
+type PostPolicyCondition struct {
+	Operator string      `json:"-"` // equals, starts-with, etc.
+	Key      string      `json:"-"`
+	Value    interface{} `json:"-"`
+}
+
+// MarshalJSON implements custom JSON marshaling for PostPolicyCondition
+// AWS S3 POST Policy requires conditions to be in array format: ["eq", "$bucket", "test-bucket"]
+func (pc PostPolicyCondition) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]interface{}{pc.Operator, pc.Key, pc.Value})
+}
+
+// PostPolicy defines a POST upload policy
+type PostPolicy struct {
+	Expiration string                `json:"expiration"` // 过期时间
+	Conditions []PostPolicyCondition `json:"-"`         // 条件列表
+}
+
+// MarshalJSON implements custom JSON marshaling for PostPolicy
+func (p PostPolicy) MarshalJSON() ([]byte, error) {
+	type Alias PostPolicy
+	conditions := make([][]interface{}, len(p.Conditions))
+	for i, cond := range p.Conditions {
+		conditions[i] = []interface{}{cond.Operator, cond.Key, cond.Value}
+	}
+	return json.Marshal(&struct {
+		Conditions [][]interface{} `json:"conditions"`
+		Alias
+	}{
+		Conditions: conditions,
+		Alias:      Alias(p),
+	})
+}
+
+// PostPolicyConditionKeys defines the condition keys for POST policy
+const (
+	PostPolicyKeyBucket         = "$bucket"
+	PostPolicyKeyKey           = "$key"
+	PostPolicyKeyContentType   = "$content-type"
+	PostPolicyKeyContentLength = "$content-length"
+)
+
+// PostPolicyConditionOperators defines the condition operators for POST policy
+const (
+	PostPolicyOpEquals     = "eq"
+	PostPolicyOpStartsWith = "starts-with"
+	PostPolicyOpRange      = "content-length-range"
+)
+
+// CreatePostPolicyInput is input for creating POST policy
+type CreatePostPolicyInput struct {
+	Bucket     string
+	Key        string
+	Expires    int64                  // 过期时间（秒）
+	ExpiresIn  int64                  // 过期时长（秒）
+	Acl        string                 // optional
+	Conditions []PostPolicyCondition // 自定义条件列表
+}
+
+// CreatePostPolicyOutput is result of creating POST policy
+type CreatePostPolicyOutput struct {
+	BaseModel
+	Policy     string `json:"policy"`     // Base64 编码的 policy
+	Signature  string `json:"signature"`  // 签名
+	Token      string `json:"token"`      // 完整 token (ak:signature:policy)
+	AccessKeyId string `json:"accessKeyId"` // Access Key ID
 }
