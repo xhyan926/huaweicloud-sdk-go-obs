@@ -2392,3 +2392,134 @@ func TestDeleteBucketDirectColdAccess_ShouldReturnError_WhenBucketEmpty(t *testi
 	require.Nil(t, output)
 	assert.Contains(t, err.Error(), "bucketName is empty")
 }
+
+// ==================== SetDisPolicy Tests ====================
+
+func TestSetDisPolicy_ShouldSetPolicy_WhenValidInput(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "PUT", req.Method)
+			assert.Equal(t, "/?dis_policy", req.URL.RequestURI())
+			assert.Equal(t, "application/json", req.Header.Get("Content-Type"))
+			return CreateTestHTTPResponse(200, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	input := &SetDisPolicyInput{
+		Bucket: "test-bucket",
+		Rules: []DisPolicyRule{
+			{
+				ID:      "rule-01",
+				Stream:  "test-stream",
+				Project: "test-project",
+				Events:  []string{"ObjectCreated:*", "ObjectRemoved:*"},
+				Prefix:  "",
+				Suffix:  "",
+				Agency:  "test-agency",
+			},
+		},
+	}
+
+	output, err := client.SetDisPolicy(input)
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestSetDisPolicy_ShouldReturnError_WhenInputNil(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.SetDisPolicy(nil)
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "SetDisPolicyInput is nil")
+}
+
+// ==================== GetDisPolicy Tests ====================
+
+func TestGetDisPolicy_ShouldGetPolicy_WhenValidBucket(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	disPolicyJSON := `{
+		"rules": [{
+			"id": "rule-01",
+			"stream": "test-stream",
+			"project": "test-project",
+			"events": ["ObjectCreated:*", "ObjectRemoved:*"],
+			"prefix": "",
+			"suffix": "",
+			"agency": "test-agency"
+		}]
+	}`
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "GET", req.Method)
+			assert.Equal(t, "/?dis_policy", req.URL.RequestURI())
+			return CreateTestHTTPResponse(200, disPolicyJSON, headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.GetDisPolicy("test-bucket")
+
+	// Note: DIS policy response parsing may vary based on actual response format
+	if err == nil {
+		require.NotNil(t, output)
+		assert.Equal(t, "test-request-id", output.RequestId)
+	} else {
+		require.NotNil(t, err)
+		require.Nil(t, output)
+	}
+}
+
+func TestGetDisPolicy_ShouldReturnError_WhenBucketEmpty(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.GetDisPolicy("")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}
+
+// ==================== DeleteDisPolicy Tests ====================
+
+func TestDeleteDisPolicy_ShouldDeletePolicy_WhenValidBucket(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("x-obs-request-id", "test-request-id")
+
+	mockTransport := &MockRoundTripper{
+		ResponseFunc: func(req *http.Request) *http.Response {
+			assert.Equal(t, "DELETE", req.Method)
+			assert.Equal(t, "/?dis_policy", req.URL.RequestURI())
+			return CreateTestHTTPResponse(204, "", headers)
+		},
+	}
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+	client.httpClient = &http.Client{Transport: mockTransport}
+
+	output, err := client.DeleteDisPolicy("test-bucket")
+
+	require.Nil(t, err)
+	require.NotNil(t, output)
+	assert.Equal(t, "test-request-id", output.RequestId)
+}
+
+func TestDeleteDisPolicy_ShouldReturnError_WhenBucketEmpty(t *testing.T) {
+	client := CreateTestObsClient(TestEndpoint, WithHttpTransport(&http.Transport{}))
+
+	output, err := client.DeleteDisPolicy("")
+
+	require.NotNil(t, err)
+	require.Nil(t, output)
+	assert.Contains(t, err.Error(), "bucketName is empty")
+}

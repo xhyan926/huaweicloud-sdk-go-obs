@@ -1028,3 +1028,55 @@ func (obsClient ObsClient) DeleteBucketDirectColdAccess(bucketName string, exten
 	}
 	return
 }
+
+// SetDisPolicy sets up DIS notification policy.
+//
+// You can use this API to configure DIS notification policy for a bucket.
+// DIS (Data Ingestion Service) provides real-time event notification for bucket operations.
+func (obsClient ObsClient) SetDisPolicy(input *SetDisPolicyInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetDisPolicyInput is nil")
+	}
+	if input.Bucket == "" {
+		return nil, errors.New("SetDisPolicyInput: bucket is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetDisPolicy", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetDisPolicy gets DIS notification policy.
+//
+// You can use this API to obtain DIS notification policy of a bucket.
+func (obsClient ObsClient) GetDisPolicy(bucketName string, extensions ...extensionOptions) (output *GetDisPolicyOutput, err error) {
+	if bucketName == "" {
+		return nil, errors.New("GetDisPolicy: bucketName is empty")
+	}
+
+	output = &GetDisPolicyOutput{}
+	err = obsClient.doActionWithBucket("GetDisPolicy", HTTP_GET, bucketName, newSubResourceSerial(SubResourceDisPolicy), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteDisPolicy deletes DIS notification policy.
+//
+// You can use this API to delete DIS notification policy of a bucket.
+func (obsClient ObsClient) DeleteDisPolicy(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if bucketName == "" {
+		return nil, errors.New("DeleteDisPolicy: bucketName is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("DeleteDisPolicy", HTTP_DELETE, bucketName, newSubResourceSerial(SubResourceDisPolicy), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}

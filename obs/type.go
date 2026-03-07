@@ -138,6 +138,9 @@ const (
 
 	// SubResourceDirectcoldaccess subResource value: directcoldaccess
 	SubResourceDirectcoldaccess SubResourceType = "directcoldaccess"
+
+	// SubResourceDisPolicy subResource value: dis_policy
+	SubResourceDisPolicy SubResourceType = "dis_policy"
 )
 
 // objectKeyType defines the objectKey value

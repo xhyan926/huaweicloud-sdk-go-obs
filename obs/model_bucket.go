@@ -14,6 +14,8 @@ package obs
 
 import (
 	"encoding/xml"
+	"encoding/json"
+	"strings"
 )
 
 // DeleteBucketCustomDomainInput is the input parameter of DeleteBucketCustomDomain function
@@ -578,5 +580,47 @@ type GetBucketDirectColdAccessOutput struct {
 
 // DeleteBucketDirectColdAccessInput is input parameter of DeleteBucketDirectColdAccess function
 type DeleteBucketDirectColdAccessInput struct {
+	Bucket string `xml:"-"`
+}
+
+// DisPolicyRule represents a single DIS policy rule
+type DisPolicyRule struct {
+	ID      string   `json:"id"`
+	Stream  string   `json:"stream"`
+	Project string   `json:"project"`
+	Events  []string `json:"events"`
+	Prefix  string   `json:"prefix,omitempty"`
+	Suffix  string   `json:"suffix,omitempty"`
+	Agency string   `json:"agency"`
+}
+
+// SetDisPolicyInput is the input parameter of SetDisPolicy function
+type SetDisPolicyInput struct {
+	Bucket string `xml:"-"`
+	Rules  []DisPolicyRule `json:"rules"`
+}
+
+// trans implements ISerializable interface for SetDisPolicyInput
+func (input SetDisPolicyInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceDisPolicy): ""}
+	jsonBytes, jsonErr := json.Marshal(input)
+	if jsonErr != nil {
+		return nil, nil, nil, jsonErr
+	}
+	headers = map[string][]string{
+		"Content-Type": {"application/json"},
+	}
+	data = strings.NewReader(string(jsonBytes))
+	return
+}
+
+// GetDisPolicyOutput is the result of GetDisPolicy function
+type GetDisPolicyOutput struct {
+	BaseModel
+	DisPolicy string `xml:"disPolicy"`
+}
+
+// DeleteDisPolicyInput is the input parameter of DeleteDisPolicy function
+type DeleteDisPolicyInput struct {
 	Bucket string `xml:"-"`
 }
