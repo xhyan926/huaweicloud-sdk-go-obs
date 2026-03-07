@@ -66,6 +66,8 @@ const (
 	HEADER_METADATA_DIRECTIVE               = "metadata-directive"
 	HEADER_EXPIRATION                       = "expiration"
 	HEADER_EXPIRES_OBS                      = "x-obs-expires"
+	HEADER_OBJECT_LOCK_MODE              = "x-obs-object-lock-mode"
+	HEADER_OBJECT_LOCK_RETAIN_UNTIL_DATE = "x-obs-object-lock-retain-until-date"
 	HEADER_RESTORE                          = "restore"
 	HEADER_OBJECT_TYPE                      = "object-type"
 	HEADER_NEXT_APPEND_POSITION             = "next-append-position"
@@ -112,6 +114,9 @@ const (
 	HEADER_SSEKMS_KEY_AMZ = "x-amz-server-side-encryption-aws-kms-key-id"
 
 	HEADER_SSEKMS_KEY_OBS = "x-obs-server-side-encryption-kms-key-id"
+	HEADER_SSE_KMS_KEY_ID          = "x-obs-sse-kms-key-id"
+	HEADER_SSE_KMS_KEY_PROJECT_ID   = "x-obs-sse-kms-key-project-id"
+	HEADER_SERVER_SIDE_DATA_ENCRYPTION = "x-obs-server-side-data-encryption"
 
 	HEADER_SUCCESS_ACTION_REDIRECT = "success_action_redirect"
 

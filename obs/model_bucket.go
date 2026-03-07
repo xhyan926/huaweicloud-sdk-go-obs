@@ -99,6 +99,10 @@ type CreateBucketInput struct {
 	BucketRedundancy            BucketRedundancyType `xml:"-"`
 	IsFusionAllowUpgrade        bool                 `xml:"-"`
 	IsRedundancyAllowALT        bool                 `xml:"-"`
+	BucketType                 string               `xml:"-"`
+	SseKmsKeyId                string               `xml:"-"`
+	SseKmsKeyProjectId         string               `xml:"-"`
+	ServerSideDataEncryption    string               `xml:"-"`
 }
 
 // SetBucketStoragePolicyInput is the input parameter of SetBucketStoragePolicy function

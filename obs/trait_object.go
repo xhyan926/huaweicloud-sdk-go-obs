@@ -56,6 +56,11 @@ func (input ListObjectsInput) trans(isObs bool) (params map[string]string, heade
 	if input.Marker != "" {
 		params["marker"] = input.Marker
 	}
+
+	if input.EncodingType != "" {
+		params["encoding-type"] = input.EncodingType
+	}
+
 	return
 }
 

@@ -114,6 +114,26 @@ func (input CreateBucketInput) trans(isObs bool) (params map[string]string, head
 		setHeaders(headers, HEADER_FUSION_ALLOW_ALT, []string{"true"}, isObs)
 	}
 
+	// 设置桶类型
+	if input.BucketType != "" {
+		setHeaders(headers, HEADER_BUCKET_TYPE, []string{input.BucketType}, true)
+	}
+
+	// 设置 KMS 加密密钥 ID
+	if input.SseKmsKeyId != "" {
+		setHeaders(headers, HEADER_SSE_KMS_KEY_ID, []string{input.SseKmsKeyId}, true)
+	}
+
+	// 设置 KMS 加密项目 ID
+	if input.SseKmsKeyProjectId != "" {
+		setHeaders(headers, HEADER_SSE_KMS_KEY_PROJECT_ID, []string{input.SseKmsKeyProjectId}, true)
+	}
+
+	// 设置数据加密算法
+	if input.ServerSideDataEncryption != "" {
+		setHeaders(headers, HEADER_SERVER_SIDE_DATA_ENCRYPTION, []string{input.ServerSideDataEncryption}, true)
+	}
+
 	return
 }
 

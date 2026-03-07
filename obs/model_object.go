@@ -34,6 +34,7 @@ type ListObjectsInput struct {
 	ListObjsInput
 	Bucket string
 	Marker string
+	EncodingType string
 }
 
 type ListPosixObjectsInput struct {
@@ -249,6 +250,8 @@ type ObjectOperationInput struct {
 	Expires                 int64
 	SseHeader               ISseHeader
 	Metadata                map[string]string
+	ObjectLockMode           string
+	ObjectLockRetainUntilDate string
 }
 
 // PutObjectBasicInput defines the basic object operation properties
