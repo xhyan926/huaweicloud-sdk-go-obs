@@ -433,7 +433,7 @@ type CallbackInput struct {
 	CallbackBodyType string `json:"callbackBodyType,omitempty"`
 }
 
-// PostPolicyCondition defines a condition for POST policy
+// PostPolicyCondition defines a condition for POST policy (for advanced usage with CreateBrowserBasedSignature)
 type PostPolicyCondition struct {
 	Operator string      `json:"-"` // equals, starts-with, etc.
 	Key      string      `json:"-"`
@@ -446,7 +446,7 @@ func (pc PostPolicyCondition) MarshalJSON() ([]byte, error) {
 	return json.Marshal([]interface{}{pc.Operator, pc.Key, pc.Value})
 }
 
-// PostPolicy defines a POST upload policy
+// PostPolicy defines a POST upload policy (for advanced usage with CreateBrowserBasedSignature)
 type PostPolicy struct {
 	Expiration string                `json:"expiration"` // 过期时间
 	Conditions []PostPolicyCondition `json:"-"`         // 条件列表
@@ -483,21 +483,17 @@ const (
 	PostPolicyOpRange      = "content-length-range"
 )
 
-// CreatePostPolicyInput is input for creating POST policy
+// CreatePostPolicyInput is input for creating simple POST policy
 type CreatePostPolicyInput struct {
-	Bucket     string
-	Key        string
-	Expires    int64                  // 过期时间（秒）
-	ExpiresIn  int64                  // 过期时长（秒）
-	Acl        string                 // optional
-	Conditions []PostPolicyCondition // 自定义条件列表
+	Bucket  string // 存储桶名称
+	Key     string // 对象键
+	Expires int64  // 过期时间（秒），默认300
+	Acl     string // 可选，访问控制策略
 }
 
 // CreatePostPolicyOutput is result of creating POST policy
 type CreatePostPolicyOutput struct {
 	BaseModel
-	Policy     string `json:"policy"`     // Base64 编码的 policy
-	Signature  string `json:"signature"`  // 签名
-	Token      string `json:"token"`      // 完整 token (ak:signature:policy)
-	AccessKeyId string `json:"accessKeyId"` // Access Key ID
+	Policy    string `json:"policy"`   // Base64 编码的 policy
+	Signature string `json:"signature"` // 签名
 }

@@ -34,11 +34,13 @@ docs/
 
 对象是 OBS 中存储的基本数据单元。对象操作 API 包括：
 
-- [POST 上传策略](./object/README.md#createpostpolicy) - 创建 POST 上传策略
+- [POST 上传策略](./object/README.md#createpostpolicy) - 创建 POST 上传策略（简化版）
+- [CreateBrowserBasedSignature](../README.md#createbrowserbasedsignature) - 高级 POST 上传策略（支持自定义条件）
 - [辅助函数](./object/README.md#辅助函数) - Policy 构建和验证
 - [数据结构](./object/README.md#数据结构) - Policy 相关数据结构
 - [常量定义](./object/README.md#常量定义) - Policy 条件键和操作符
 - [使用场景](./object/README.md#使用场景) - 常见使用场景
+- [示例代码](../../examples/post_upload/) - 完整的 POST 上传示例
 
 ### 分块上传 (multipart/)
 
@@ -186,4 +188,4 @@ SDK 中的 API 方法命名遵循以下规范：
 
 ---
 
-**最后更新**: 2026-03-06 (任务组 2：POST 上传策略文档已生成)
+**最后更新**: 2026-03-07 (任务组 2：POST 上传策略重构完成)

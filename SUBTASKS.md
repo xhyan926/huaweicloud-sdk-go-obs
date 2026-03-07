@@ -20,12 +20,20 @@
 4. [x 子任务 1.4 - 桶清单客户端方法实现](subtasks/task-04/TASK.md) ✅
 5. [x 子任务 1.5 - 桶清单单元测试](subtasks/task-05/TASK.md) ✅
 
-#### 任务组 2：POST 上传策略和签名生成
+#### 任务组 2：POST 上传策略和签名生成（已重构）
 6. [x 子任务 2.1 - POST 策略数据模型定义](subtasks/task-06/TASK.md) ✅
 7. [x 子任务 2.2 - POST 策略构建和验证](subtasks/task-07/TASK.md) ✅
 8. [x 子任务 2.3 - POST 签名计算](subtasks/task-08/TASK.md) ✅
 9. [x 子任务 2.4 - POST 策略单元测试](subtasks/task-09/TASK.md) ✅
 10. [x 子任务 2.5 - POST 上传示例代码](subtasks/task-10/TASK.md) ✅
+
+**重构说明** (2026-03-07):
+- 简化 CreatePostPolicy 接口，只保留基本的 POST 签名计算功能
+- 删除与 CreateBrowserBasedSignature 重复的复杂功能
+- 保留 CreateBrowserBasedSignature 作为高级 POST 上传接口
+- 更新 API 文档以反映简化后的接口
+- 更新示例代码，提供完整的 POST 上传示例
+- 所有测试通过
 
 #### 任务组 3：参数完整性改进
 11. [子任务 3.1 - 创建桶参数补充](subtasks/task-11/TASK.md)

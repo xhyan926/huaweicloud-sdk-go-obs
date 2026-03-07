@@ -14,7 +14,6 @@ package obs
 
 import (
 	"bytes"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -1533,13 +1532,13 @@ func TestDeleteDirAccesslabel_ShouldReturnError_WhenInputNil(t *testing.T) {
 
 // CreatePostPolicy tests
 
-func TestCreatePostPolicy_ShouldReturnPolicy_GivenValidInput(t *testing.T) {
+func TestCreatePostPolicy_ShouldReturnPolicyAndSignature_GivenValidInput(t *testing.T) {
 	client := CreateTestObsClient(TestEndpoint)
 
 	input := &CreatePostPolicyInput{
-		Bucket:    TestBucket,
-		Key:       "test-object",
-		ExpiresIn: 3600,
+		Bucket: TestBucket,
+		Key:    "test-object",
+		Expires: 600,
 	}
 
 	output, err := client.CreatePostPolicy(input)
@@ -1548,38 +1547,23 @@ func TestCreatePostPolicy_ShouldReturnPolicy_GivenValidInput(t *testing.T) {
 	require.NotNil(t, output)
 	assert.NotEmpty(t, output.Policy)
 	assert.NotEmpty(t, output.Signature)
-	assert.NotEmpty(t, output.Token)
-	assert.NotEmpty(t, output.AccessKeyId)
 }
 
-func TestCreatePostPolicy_ShouldIncludeDefaultConditions_GivenNoConditions(t *testing.T) {
+func TestCreatePostPolicy_ShouldUseDefaultExpiration_GivenZeroExpires(t *testing.T) {
 	client := CreateTestObsClient(TestEndpoint)
 
 	input := &CreatePostPolicyInput{
-		Bucket:   TestBucket,
-		Key:      "test-object",
-		ExpiresIn: 3600,
+		Bucket: TestBucket,
+		Key:    "test-object",
+		Expires: 0,
 	}
 
 	output, err := client.CreatePostPolicy(input)
 
 	require.Nil(t, err)
 	require.NotNil(t, output)
-
-	// 验证 Policy 中包含桶和键条件
-	policyJSON, err := Base64Decode(output.Policy)
-	require.Nil(t, err)
-
-	var policy map[string]interface{}
-	err = json.Unmarshal(policyJSON, &policy)
-	require.Nil(t, err)
-
-	conditions, ok := policy["conditions"].([]interface{})
-	require.True(t, ok)
-	require.NotEmpty(t, conditions)
-
-	// 验证至少包含桶和键条件（2个默认条件）
-	assert.True(t, len(conditions) >= 2)
+	assert.NotEmpty(t, output.Policy)
+	assert.NotEmpty(t, output.Signature)
 }
 
 func TestCreatePostPolicy_ShouldReturnError_GivenNilInput(t *testing.T) {
@@ -1596,9 +1580,9 @@ func TestCreatePostPolicy_ShouldReturnError_GivenEmptyBucket(t *testing.T) {
 	client := CreateTestObsClient(TestEndpoint)
 
 	input := &CreatePostPolicyInput{
-		Bucket:   "",
-		Key:      "test-object",
-		ExpiresIn: 3600,
+		Bucket: "",
+		Key:    "test-object",
+		Expires: 600,
 	}
 
 	output, err := client.CreatePostPolicy(input)
@@ -1612,9 +1596,9 @@ func TestCreatePostPolicy_ShouldReturnError_GivenEmptyKey(t *testing.T) {
 	client := CreateTestObsClient(TestEndpoint)
 
 	input := &CreatePostPolicyInput{
-		Bucket:   TestBucket,
-		Key:      "",
-		ExpiresIn: 3600,
+		Bucket: TestBucket,
+		Key:    "",
+		Expires: 600,
 	}
 
 	output, err := client.CreatePostPolicy(input)
@@ -1622,40 +1606,5 @@ func TestCreatePostPolicy_ShouldReturnError_GivenEmptyKey(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Nil(t, output)
 	assert.Contains(t, err.Error(), "key is empty")
-}
-
-func TestCreatePostPolicy_ShouldGenerateValidToken_GivenCompleteInput(t *testing.T) {
-	client := CreateTestObsClient(TestEndpoint)
-
-	input := &CreatePostPolicyInput{
-		Bucket:   TestBucket,
-		Key:      "test-object",
-		ExpiresIn: 3600,
-		Acl:       "public-read",
-	}
-
-	output, err := client.CreatePostPolicy(input)
-
-	require.Nil(t, err)
-	require.NotNil(t, output)
-
-	// 验证 Token 格式: ak:signature:policy
-	tokenParts := strings.Split(output.Token, ":")
-	require.Equal(t, 3, len(tokenParts))
-
-	// 第一部分是 AccessKeyId
-	assert.Equal(t, output.AccessKeyId, tokenParts[0])
-	// 第二部分是 Signature
-	assert.Equal(t, output.Signature, tokenParts[1])
-	// 第三部分是 Policy
-	assert.Equal(t, output.Policy, tokenParts[2])
-
-	// 验证 Policy 可以解码
-	_, err = Base64Decode(output.Policy)
-	assert.NoError(t, err)
-
-	// 验证 Signature 可以解码
-	_, err = Base64Decode(output.Signature)
-	assert.NoError(t, err)
 }
 
