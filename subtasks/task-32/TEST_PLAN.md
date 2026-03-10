@@ -1,41 +1,53 @@
-# 子任务 9.1：测试计划
+# 子任务 9.1 测试计划：WORM 策略数据模型和常量定义
 
 ## 测试目标
-验证 WORM 策略数据结构的正确性。
+验证 WORM 策略数据模型和常量定义的正确性，确保接口设计符合预期。
 
 ## 测试用例
 
-### 1. 结构体完整性测试
-```go
-func TestSetBucketObjectLockInput_ShouldHaveRequiredFields_GivenValidInput(t *testing.T) {
-    // 验证必需字段存在
-}
+### 1. 数据模型测试
+- **测试名称**：Should_define_worm_structures_correctly
+- **测试内容**：
+  - 验证 BucketWormConfiguration 结构定义
+  - 验证所有输入/输出结构体
+  - 检查字段类型和标签
+- **预期结果**：所有结构定义正确
 
-func TestGetBucketObjectLockOutput_ShouldParseResponse_GivenValidXML(t *testing.T) {
-    // 验证响应解析
-}
-```
+### 2. 常量定义测试
+- **测试名称**：Should_define_worm_constants
+- **测试内容**：
+  - 验证 HTTP 常量定义
+  - 验证参数名常量
+  - 验证状态常量
+- **预期结果**：所有常量定义正确
 
-### 2. 常量测试
-```go
-func TestSubResourceObjectLock_ShouldHaveCorrectValue(t *testing.T) {
-    // 验证常量值正确
-}
-```
+### 3. 接口设计测试
+- **测试名称**：Should_define_client_methods
+- **测试内容**：
+  - 验证客户端方法签名
+  - 检查参数类型
+  - 验证返回值类型
+- **预期结果**：方法签名符合规范
+
+### 4. 参数验证测试
+- **测试名称**：Should_validate_worm_parameters
+- **测试内容**：
+  - 空桶名称检查
+  - 无效参数检查
+  - 日期格式验证
+  - 状态枚举验证
+- **预期结果**：验证逻辑完善
 
 ## 测试工具
+- testify：用于断言
+- gomonkey：用于模拟
 
-- testify: 断言库
-- encoding/xml: XML 验证
+## 测试执行
+```bash
+go test -tags unit ./obs -v -run "TestWorm"
+```
 
-## 验收标准
-
-- [ ] 结构体定义完整
-- [ ] 常量定义正确
-- [ ] 测试覆盖率 > 90%
-
-## 执行步骤
-
-1. 在相关测试文件中添加测试用例
-2. 运行测试：`go test ./... -v`
-3. 检查覆盖率：`go test ./... -cover`
+## 测试覆盖率要求
+- 结构体定义覆盖率：100%
+- 常量定义覆盖率：100%
+- 参数验证覆盖率：90%

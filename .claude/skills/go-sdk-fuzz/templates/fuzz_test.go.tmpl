@@ -1,0 +1,182 @@
+//go:build fuzz
+
+package obs
+
+import (
+	"testing"
+	"runtime"
+	"time"
+	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+)
+
+// Fuzz{{.FunctionName}} 测试{{.Description}}
+func Fuzz{{.FunctionName}}(f *testing.F) {
+	// 添加种子数据
+	{{- range .Seeds}}
+	seeds_{{$.FunctionName}} := []{{.Type}}{{
+		{{range .Fields}}
+		{{.Name}}: {{.Value}},
+		{{- end}}
+	}}
+	{{- end}}
+
+	for _, seed := range seeds_{{.FunctionName}} {
+		f.Add(seed)
+	}
+
+	// 模糊测试
+	f.Fuzz(func(t *testing.T, {{.InputParam}}) {
+		// 防止测试超时
+		if len(f.Fuzzing()) > {{.MaxExecutions}} {
+			t.Skip("跳过长时间运行")
+		}
+
+		// {{.InputDesc}}大小限制
+		{{if .SizeLimit}}
+		if len({{.InputParam}}) > {{.SizeLimit}} {
+			t.Skip("{{.InputDesc}}过长，跳过")
+		}
+		{{end}}
+
+		// 资源监控
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		if m.Alloc > {{.MemoryLimit}} {
+			t.Skip("内存使用过高，跳过")
+		}
+
+		// 记录测试开始时间
+		startTime := time.Now()
+
+		// 手试输入处理
+		{{.TestCode}}
+
+		// 记录执行时间（可选）
+		elapsed := time.Since(startTime)
+		if elapsed > {{.Timeout}} {
+			t.Logf("执行时间过长: %v", elapsed)
+		}
+
+		// 验证结果
+		{{if .ValidateCode}}
+		{{.ValidateCode}}
+		{{end}}
+	})
+}
+
+// Fuzz{{.FunctionName}}_WithCrashHandling 带崩溃处理的测试
+func Fuzz{{.FunctionName}}_WithCrashHandling(f *testing.F) {
+	// 添加种子数据
+	{{- range .Seeds}}
+	seeds_{{$.FunctionName}}_crash := []{{.Type}}{{
+		{{range .Fields}}
+		{{.Name}}: {{.Value}},
+		{{- end}}
+	}}
+	{{- end}}
+
+	for _, seed := range seeds_{{.FunctionName}}_crash {
+		f.Add(seed)
+	}
+
+	// 模糊测试
+	f.Fuzz(func(t *testing.T, {{.InputParam}}) {
+		// 防止测试超时
+		if len(f.Fuzzing()) > {{.MaxExecutions}} {
+			t.Skip("跳过长时间运行")
+		}
+
+		// 输入大小限制
+		{{if .SizeLimit}}
+		if len({{.InputParam}}) > {{.SizeLimit}} {
+			t.Skip("{{.InputDesc}}过长，跳过")
+		}
+		{{end}}
+
+		// 执行测试并捕获panic
+		defer func() {
+			if r := recover(); r != nil {
+				t.Logf("捕获到panic: %v", r)
+				t.Error("测试导致panic")
+			}
+		}()
+
+		// 执行测试
+		{{.TestCode}}
+	})
+}
+
+// Fuzz{{.FunctionName}}_WithBoundary 测试边界条件
+func Fuzz{{.FunctionName}}_WithBoundary(f *testing.F) {
+	// 添加边界值种子
+	boundarySeeds := []struct {
+		name string
+		{{.InputParam}} {{.Type}}
+	}{
+		{{- range .BoundaryCases}}
+		{
+			name: "{{.Name}}",
+			{{$.InputParam}}: {{.Value}},
+		},
+		{{- end}}
+	}
+
+	for _, seed := range boundarySeeds {
+		f.Add(seed.{{$.InputParam}})
+	}
+
+	// 边界测试
+	f.Fuzz(func(t *testing.T, {{.InputParam}}) {
+		// 防止测试超时
+		if len(f.Fuzzing()) > {{.MaxExecutions}} {
+			t.Skip("跳过长时间运行")
+		}
+
+		// 执行边界测试
+		{{.BoundaryTestCode}}
+	})
+}
+
+// Fuzz{{.FunctionName}}_Performance 性能测试
+func Fuzz{{.FunctionName}}_Performance(f *testing.F) {
+	// 添加种子数据
+	{{- range .Seeds}}
+	seeds_{{$.FunctionName}}_perf := []{{.Type}}{{
+		{{range .Fields}}
+		{{.Name}}: {{.Value}},
+		{{- end}}
+	}}
+	{{- end}}
+
+	for _, seed := range seeds_{{$.FunctionName}}_perf {
+		f.Add(seed)
+	}
+
+	// 性能测试
+	f.Fuzz(func(t *testing.T, {{.InputParam}}) {
+		// 限制执行次数
+		if len(f.Fuzzing()) > {{.PerfMaxExecutions}} {
+			t.Skip("跳过长时间运行")
+		}
+
+		// 记录开始时间
+		start := time.Now()
+
+		// 执行测试
+		for i := 0; i < {{.PerfIterations}}; i++ {
+			{{.TestCode}}
+		}
+
+		// 计算耗时
+		elapsed := time.Since(start)
+		avg := elapsed / time.Duration({{.PerfIterations}})
+
+		// 记录性能数据
+		t.Logf("平均执行时间: %v", avg)
+
+		// 性能断言
+		if avg > {{.PerfThreshold}} {
+			t.Errorf("性能低于预期，平均时间: %v", avg)
+		}
+	})
+}

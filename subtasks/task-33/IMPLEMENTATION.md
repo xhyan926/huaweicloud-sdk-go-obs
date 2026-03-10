@@ -1,75 +1,67 @@
-# 子任务 9.2：实施计划
+# 子任务 9.2 实施计划：WORM 策略实现
 
 ## 详细实施步骤
 
-### 1. 文件位置
-- **目标文件 1**: `obs/trait_bucket.go`
-- **目标文件 2**: `obs/client_bucket.go`
+### 第1步：XML 序列化实现（1天）
+1. 实现 BucketWormConfiguration 的 XML 序列化
+2. 实现 XML 反序列化解析响应
+3. 添加日期格式化逻辑（CreateDate, ModifyDate）
+4. 处理版本控制逻辑
+5. 测试序列化/反序列化正确性
 
-### 2. 客户端方法实现
+### 第2步：Trait 层实现（2天）
+1. 在 `obs/trait_bucket.go` 中添加方法实现：
+   - `SetBucketWormTrait`：设置 WORM 策略
+   - `GetBucketWormTrait`：获取 WORM 策略
+   - `ExtendBucketWormTrait`：延长 WORM 策略
+2. 实现参数验证逻辑
+   - 日期格式验证
+   - 状态枚举验证
+   - 期限范围验证
+3. 处理 WORM 策略的特殊约束：
+   - COMPLIANCE 状态下的不可修改性
+   - SUSPENDED 状态的特殊处理
+   - 版本控制逻辑
+4. 处理不同的响应状态码
+5. 添加错误码映射
 
-```go
-// SetBucketObjectLock sets up bucket-level WORM policy
-func (obsClient ObsClient) SetBucketObjectLock(input *SetBucketObjectLockInput, extensions ...extensionOptions) (output *BaseModel, err error) {
-    if input == nil {
-        return nil, errors.New("SetBucketObjectLockInput is nil")
-    }
-    if input.Bucket == "" {
-        return nil, errors.New("bucket is empty")
-    }
+### 第3步：客户端方法扩展（1天）
+1. 在 `obs/client_bucket.go` 中实现方法调用：
+   - 调用 Trait 层方法
+   - 处理返回值
+   - 添加扩展选项支持
+2. 实现进度回调支持（如果有）
 
-    output = &BaseModel{}
-    err = obsClient.doActionWithBucket("SetBucketObjectLock", HTTP_PUT, input.Bucket, input, output, extensions)
-    if err != nil {
-        output = nil
-    }
-    return
-}
+### 第4步：HTTP 请求处理（1天）
+1. 构造正确的 HTTP 请求
+2. 设置必要的请求头
+3. 处理响应解析
+4. 实现重试逻辑（如果需要）
 
-// GetBucketObjectLock gets bucket-level WORM policy
-func (obsClient ObsClient) GetBucketObjectLock(bucketName string, extensions ...extensionOptions) (output *GetBucketObjectLockOutput, err error) {
-    if bucketName == "" {
-        return nil, errors.New("bucketName is empty")
-    }
+### 第5步：错误处理完善（0.5天）
+1. 定义特定的错误类型
+2. 添加 WORM 特定的错误码
+3. 实现错误消息本地化
+4. 添加调试日志
 
-    output = &GetBucketObjectLockOutput{}
-    err = obsClient.doActionWithBucket("GetBucketObjectLock", HTTP_GET, bucketName,
-        newSubResourceSerial(SubResourceObjectLock), output, extensions)
-    if err != nil {
-        output = nil
-    }
-    return
-}
+### 第6步：WORM 策略特殊处理（0.5天）
+1. 实现策略状态转换逻辑
+2. 处理期限延长逻辑
+3. 实现版本控制
+4. 处理特殊约束条件
 
-// DeleteBucketObjectLock deletes bucket-level WORM policy
-func (obsClient ObsClient) DeleteBucketObjectLock(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
-    if bucketName == "" {
-        return nil, errors.New("bucketName is empty")
-    }
+## 技术细节
+- 使用现有的 XML 序列化框架
+- 遵循现有的错误处理模式
+- 使用函数式选项模式
+- 保持与现有 API 的一致性
+-特别注意 WORM 策略的特殊业务规则
 
-    output = &BaseModel{}
-    err = obsClient.doActionWithBucket("DeleteBucketObjectLock", HTTP_DELETE, bucketName,
-        newSubResourceSerial(SubResourceObjectLock), output, extensions)
-    if err != nil {
-        output = nil
-    }
-    return
-}
-```
+## 时间估算
+总计：6天
 
-### 3. 时间估算
-- SetBucketObjectLock 实现：20 分钟
-- GetBucketObjectLock 实现：15 分钟
-- DeleteBucketObjectLock 实现：15 分钟
-- 测试和调试：20 分钟
-- **总计**: 约 1.2 小时（0.15 天）
-
-## 技术要点
-
-### 方法命名
-- 遵循现有命名模式
-- 使用描述性名称
-
-### 参数验证
-- 验证输入不为 nil
-- 验证桶名称不为空
+## 风险评估
+- 中等风险：WORM 策略有复杂的业务规则
+- 需要确保状态转换的正确性
+- 需要处理日期和版本控制
+- 错误处理需要覆盖所有场景

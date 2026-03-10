@@ -1,0 +1,124 @@
+//go:build integration
+
+package e2e
+
+import (
+	"testing"
+	"fmt"
+	"time"
+
+	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+)
+
+// {{.TestName}} 测试描述
+func {{.TestName}}(t *testing.T) {
+	// 创建集成测试客户端
+	client := integration.NewTestClient(t)
+	defer client.Cleanup(t)
+
+	// 获取测试桶
+	bucket := client.GetTestBucket()
+	t.Logf("使用测试桶: %s", bucket)
+
+	// 测试场景开始
+	t.Run("场景描述", func(t *testing.T) {
+		// 准备测试数据
+		objectKey := client.GetTestObjectKey("test-{{.Suffix}}.txt")
+		content := "这是{{.TestName}}的测试内容。"
+
+		// 执行测试操作
+		err := client.TestClient().PutObject(bucket, objectKey, content, nil)
+		if err != nil {
+			t.Fatalf("操作失败: %v", err)
+		}
+
+		// 验证结果
+		t.Logf("操作成功: %s", objectKey)
+
+		// 注册清理函数（可选）
+		client.AddCleanup(func(t *testing.T) {
+			err := client.TestClient().DeleteObject(bucket, objectKey)
+			if err != nil {
+				t.Logf("清理失败: %v", err)
+			}
+		})
+	})
+}
+
+// {{.TestName}}_WithMock 使用Mock服务器的测试
+func {{.TestName}}_WithMock(t *testing.T) {
+	// 创建Mock服务器
+	mockServer := integration.NewMockServer()
+	err := mockServer.Start(":8080")
+	if err != nil {
+		t.Fatalf("启动Mock服务器失败: %v", err)
+	}
+	defer mockServer.Stop()
+
+	// 创建指向Mock服务器的客户端
+	mockEndpoint := "http://localhost:8080"
+	client := integration.NewTestClientWithEndpoint(t, mockEndpoint)
+	defer client.Cleanup(t)
+
+	// 执行测试...
+}
+
+// {{.TestName}}_Concurrent 并发测试
+func {{.TestName}}_Concurrent(t *testing.T) {
+	client := integration.NewTestClient(t)
+	defer client.Cleanup(t)
+
+	bucket := client.GetTestBucket()
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, 10)
+
+	// 并发执行测试操作
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+
+			objectKey := client.GetTestObjectKey(fmt.Sprintf("concurrent-%d.txt", id))
+			content := fmt.Sprintf("并发测试内容 %d", id)
+
+			err := client.TestClient().PutObject(bucket, objectKey, content, nil)
+			if err != nil {
+				errChan <- fmt.Errorf("并发 %d 失败: %v", id, err)
+			}
+		}(i)
+	}
+
+	wg.Wait()
+	close(errChan)
+
+	// 收集错误
+	for err := range errChan {
+		t.Error(err)
+	}
+}
+
+// {{.TestName}}_WithTimeout 带超时的测试
+func {{.TestName}}_WithTimeout(t *testing.T) {
+	client := integration.NewTestClient(t)
+	defer client.Cleanup(t)
+
+	// 创建带超时的context
+	ctx, cancel := client.WithContext(30 * time.Second)
+	defer cancel()
+
+	// 使用context执行长时间操作
+	bucket := client.GetTestBucket()
+	objectKey := client.GetTestObjectKey("timeout-test.txt")
+	content := "带超时的测试内容。"
+
+	// 执行操作（这里需要根据实际情况修改）
+	err := client.TestClient().PutObject(bucket, objectKey, content, nil)
+	if err != nil {
+		t.Fatalf("操作失败: %v", err)
+	}
+
+	// 验证操作结果
+	t.Logf("操作成功完成")
+}

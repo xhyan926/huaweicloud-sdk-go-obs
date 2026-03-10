@@ -93,3 +93,51 @@ API 调用通过可变参数支持扩展选项：
 - 使用testify进行断言
 - 使用httptest模拟http server
 - 使用gomonkey进行mock
+
+### 测试工程化规范
+**测试分层架构**：
+- **单元测试** (`*_test.go`, `*_internal_test.go`): 使用build tag `//go:build unit`
+- **集成测试** (`obs/test/integration/`): 使用build tag `//go:build integration`
+- **性能测试** (`*_benchmark_test.go`): 使用build tag `//go:build perf`
+- **模糊测试** (`*_fuzz_test.go`): 使用build tag `//go:build fuzz`
+
+**测试技能使用**：
+- `/go-sdk-ut`: 单元测试编写指南
+- `/go-sdk-integration`: 集成测试编写指南
+- `/go-sdk-perf`: 性能测试编写指南
+- `/go-sdk-fuzz`: 模糊测试编写指南
+
+**测试命令**：
+```bash
+# 运行单元测试
+go test -tags unit ./obs -v
+
+# 运行集成测试
+go test -tags integration ./obs/test/integration -v
+
+# 运行性能测试
+go test -tags perf ./obs -bench=BenchmarkLight -benchtime=1s
+
+# 运行模糊测试
+go test -tags fuzz ./obs -fuzz=.
+
+# 生成测试报告
+make test-report
+```
+
+**测试配置管理**：
+- 通过环境变量配置测试参数
+- 自动跳过机制（`OBS_SKIP_INTEGRATION_TESTS`）
+- Mock服务器支持（`OBS_MOCK_ENABLED`）
+
+**测试文档**：
+- `docs/testing/`: 测试工程化文档
+- `docs/testing/README.md`: 测试工程总览
+- `docs/testing/architecture.md`: 测试架构设计
+- `docs/testing/integration-testing.md`: 集成测试规范
+
+**测试流程**：
+1. 开发前期：制定测试策略，确定测试类型
+2. 开发中期：按子任务编写对应测试，调用测试技能
+3. 开发后期：多层测试验证（使用对应build tags）
+4. 完成阶段：生成测试报告

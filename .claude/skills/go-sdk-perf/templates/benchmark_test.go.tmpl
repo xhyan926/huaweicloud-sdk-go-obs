@@ -1,0 +1,267 @@
+//go:build perf
+
+package obs
+
+import (
+	"bytes"
+	"testing"
+	"fmt"
+	"time"
+	"sync"
+	"runtime"
+	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/config"
+)
+
+// BenchmarkLight_{{.TestName}}_{{.Scenario}} 轻量级性能测试 - {{.Description}}
+func BenchmarkLight_{{.TestName}}_{{.Scenario}}(b *testing.B) {
+	// 创建测试客户端
+	cfg := config.LoadTestConfig()
+	obsClient, _ := obs.New(cfg.AccessKey, cfg.SecretKey, cfg.Endpoint)
+	defer obsClient.Close()
+
+	// {{.Description}}
+	{{if .CreateTestData}}
+	{{.TestDataCreation}}
+	{{end}}
+
+	b.ResetTimer()
+	{{if .UseParallel}}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			{{.TestCode}}
+		}
+	})
+	{{else}}
+	for i := 0; i < b.N; i++ {
+		{{.TestCode}}
+	}
+	{{end}}
+}
+
+// BenchmarkDeep_{{.TestName}}_{{.Scenario}} 深度性能测试 - {{.Description}}
+func BenchmarkDeep_{{.TestName}}_{{.Scenario}}(b *testing.B) {
+	// 创建测试客户端
+	cfg := config.LoadTestConfig()
+	obsClient, _ := obs.New(cfg.AccessKey, cfg.SecretKey, cfg.Endpoint)
+	defer obsClient.Close()
+
+	// {{.Description}}
+	{{if .SetupData}}
+	{{.SetupCode}}
+	{{end}}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		{{.TestCode}}
+	}
+}
+
+// BenchmarkConcurrent_{{.TestName}}_{{.Scenario}} 并发性能测试 - {{.Description}}
+func BenchmarkConcurrent_{{.TestName}}_{{.Scenario}}(b *testing.B) {
+	// 创建测试客户端
+	cfg := config.LoadTestConfig()
+	obsClient, _ := obs.New(cfg.AccessKey, cfg.SecretKey, cfg.Endpoint)
+	defer obsClient.Close()
+
+	// {{.Description}}
+	{{if .SetupData}}
+	{{.SetupCode}}
+	{{end}}
+
+	// 测试不同的并发级别
+	concurrencyLevels := []int{1, 10, 50, 100}
+
+	for _, concurrency := range concurrencyLevels {
+		b.Run(fmt.Sprintf("Concurrency-%d", concurrency), func(b *testing.B) {
+			b.SetParallelism(concurrency)
+
+			b.ResetTimer()
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					{{.TestCode}}
+				}
+			})
+		})
+	}
+}
+
+// BenchmarkMemory_{{.TestName}}_{{.Scenario}} 内存性能测试 - {{.Description}}
+func BenchmarkMemory_{{.TestName}}_{{.Scenario}}(b *testing.B) {
+	// 创建测试客户端
+	cfg := config.LoadTestConfig()
+	obsClient, _ := obs.New(cfg.AccessKey, cfg.SecretKey, cfg.Endpoint)
+	defer obsClient.Close()
+
+	// {{.Description}}
+	{{if .CreateTestData}}
+	{{.TestDataCreation}}
+	{{end}}
+
+	var m runtime.MemStats
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			// 记录内存使用前
+			runtime.ReadMemStats(&m)
+			memBefore := m.Alloc
+
+			{{.TestCode}}
+
+			// 记录内存使用后
+			runtime.ReadMemStats(&m)
+			memDelta := m.Alloc - memBefore
+
+			if memDelta > 0 {
+				b.Logf("内存分配: %d bytes", memDelta)
+			}
+		}
+	})
+}
+
+// BenchmarkResource_{{.TestName}}_{{.Scenario}} 资源监控测试 - {{.Description}}
+func BenchmarkResource_{{.TestName}}_{{.Scenario}}(b *testing.B) {
+	// 创建测试客户端
+	cfg := config.LoadTestConfig()
+	obsClient, _ := obs.New(cfg.AccessKey, cfg.SecretKey, cfg.Endpoint)
+	defer obsClient.Close()
+
+	// {{.Description}}
+	{{if .SetupData}}
+	{{.SetupCode}}
+	{{end}}
+
+	var m runtime.MemStats
+	var cpuUsage float64
+	var totalGC uint32
+	startTime := time.Now()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// 开始时间
+		opStart := time.Now()
+
+		// 执行测试
+		{{.TestCode}}
+
+		// 记录性能数据
+		opDuration := time.Since(opStart)
+
+		// 记录资源使用
+		runtime.ReadMemStats(&m)
+		totalGC += m.NumGC - totalGC
+
+		// 每100次操作记录一次统计
+		if i%100 == 0 {
+			cpuUsage = float64(opDuration) / float64(time.Millisecond)
+			b.Logf("操作 %d: 时间=%v, 内存=%d MB, GC=%d",
+				i, opDuration, m.Alloc/1024/1024, totalGC)
+		}
+	}
+
+	// 最终统计
+	elapsed := time.Since(startTime)
+	avgOpTime := float64(elapsed) / float64(b.N) / float64(time.Millisecond)
+
+	b.Logf("=== 资源使用统计 ===")
+	b.Logf("总操作数: %d", b.N)
+	b.Logf("总时间: %v", elapsed)
+	b.Logf("平均操作时间: %.2f ms", avgOpTime)
+	b.Logf("最大内存使用: %d MB", m.Alloc/1024/1024)
+	b.Logf("GC次数: %d", totalGC)
+	b.Logf("CPU使用率: %.2f%%", cpuUsage)
+}
+
+// BenchmarkRegression_{{.TestName}}_{{.Scenario}} 性能回归测试 - {{.Description}}
+func BenchmarkRegression_{{.TestName}}_{{.Scenario}}(b *testing.B) {
+	// 创建测试客户端
+	cfg := config.LoadTestConfig()
+	obsClient, _ := obs.New(cfg.AccessKey, cfg.SecretKey, cfg.Endpoint)
+	defer obsClient.Close()
+
+	// {{.Description}}
+	{{if .SetupData}}
+	{{.SetupCode}}
+	{{end}}
+
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			{{.TestCode}}
+		}
+	})
+
+	// 性能回归检查
+	{{if .RegressionCheck}}
+	{{.RegressionCheckCode}}
+	{{end}}
+}
+
+// 性能基准配置
+var performanceBaseline = map[string]float64{
+	{{range .Baselines}}
+	"{{.Name}}": {{.Value}},{{end}}
+}
+
+// 性能退化阈值
+const performanceThreshold = 0.9 // 90%
+
+// checkPerformanceDegradation 检查性能退化
+func checkPerformanceDegradation(b *testing.B, testName string, currentValue float64) {
+	if baseline, exists := performanceBaseline[testName]; exists {
+		if currentValue < baseline*performanceThreshold {
+			b.Errorf("性能退化检测失败! 当前: %.2f, 基线: %.2f (阈值: %.1f%%)",
+				currentValue, baseline, performanceThreshold*100)
+		}
+	}
+}
+
+// calculateThroughput 计算吞吐量 (MB/s)
+func calculateThroughput(result testing.BenchmarkResult, fileSizeMB float64) float64 {
+	if result.N <= 0 || result.T <= 0 {
+		return 0
+	}
+
+	// 计算总数据量 (MB)
+	totalData := float64(result.N) * fileSizeMB
+
+	// 计算总时间 (秒)
+	totalTime := float64(result.T) / float64(time.Second)
+
+	if totalTime <= 0 {
+		return 0
+	}
+
+	return totalData / totalTime
+}
+
+// calculateLatency 计算延迟 (ms)
+func calculateLatency(result testing.BenchmarkResult) float64 {
+	if result.N <= 0 {
+		return 0
+	}
+
+	// 计算平均延迟 (纳秒)
+	avgLatencyNs := float64(result.T) / float64(result.N)
+
+	// 转换为毫秒
+	return avgLatencyNs / float64(time.Millisecond)
+}
+
+// generatePerfReport 生成性能报告
+func generatePerfReport(b *testing.B, testName string, result testing.BenchmarkResult, fileSizeMB float64) {
+	throughput := calculateThroughput(result, fileSizeMB)
+	latency := calculateLatency(result)
+
+	// 检查性能退化
+	checkPerformanceDegradation(b, testName, throughput)
+
+	b.Logf("=== 性能报告 ===")
+	b.Logf("测试名称: %s", testName)
+	b.Logf("操作次数: %d", result.N)
+	b.Logf("总时间: %v", result.T)
+	b.Logf("吞吐量: %.2f MB/s", throughput)
+	b.Logf("平均延迟: %.2f ms", latency)
+	b.Logf("内存分配: %d bytes/op", result.MemBytes)
+	b.Logf("内存分配次数: %d allocs/op", result.AllocsPerOp)
+}

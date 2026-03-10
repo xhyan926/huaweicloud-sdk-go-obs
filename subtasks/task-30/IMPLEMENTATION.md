@@ -1,75 +1,51 @@
-# 子任务 8.2：实施计划
+# 子任务 8.2 实施计划：在线解压策略实现
 
 ## 详细实施步骤
 
-### 1. 文件位置
-- **目标文件 1**: `obs/trait_bucket.go`
-- **目标文件 2**: `obs/client_bucket.go`
+### 第1步：XML 序列化实现（1天）
+1. 实现 DecompressionConfiguration 的 XML 序列化
+2. 实现 XML 反序列化解析响应
+3. 添加时间格式化逻辑（CreatedAt, ModifiedAt）
+4. 测试序列化/反序列化正确性
 
-### 2. 客户端方法实现
+### 第2步：Trait 层实现（1.5天）
+1. 在 `obs/trait_bucket.go` 中添加方法实现：
+   - `SetBucketDecompressionTrait`：设置解压策略
+   - `GetBucketDecompressionTrait`：获取解压策略
+   - `DeleteBucketDecompressionTrait`：删除解压策略
+2. 实现参数验证逻辑
+3. 处理不同的响应状态码
+4. 添加错误码映射
 
-```go
-// SetZipPolicy sets up ZIP extraction policy
-func (obsClient ObsClient) SetZipPolicy(input *SetZipPolicyInput, extensions ...extensionOptions) (output *BaseModel, err error) {
-    if input == nil {
-        return nil, errors.New("SetZipPolicyInput is nil")
-    }
-    if input.Bucket == "" {
-        return nil, errors.New("bucket is empty")
-    }
+### 第3步：客户端方法扩展（1天）
+1. 在 `obs/client_bucket.go` 中实现方法调用：
+   - 调用 Trait 层方法
+   - 处理返回值
+   - 添加扩展选项支持
+2. 实现进度回调支持（如果有）
 
-    output = &BaseModel{}
-    err = obsClient.doActionWithBucket("SetZipPolicy", HTTP_PUT, input.Bucket, input, output, extensions)
-    if err != nil {
-        output = nil
-    }
-    return
-}
+### 第4步：HTTP 请求处理（1天）
+1. 构造正确的 HTTP 请求
+2. 设置必要的请求头
+3. 处理响应解析
+4. 实现重试逻辑（如果需要）
 
-// GetZipPolicy gets ZIP extraction policy
-func (obsClient ObsClient) GetZipPolicy(bucketName string, extensions ...extensionOptions) (output *GetZipPolicyOutput, err error) {
-    if bucketName == "" {
-        return nil, errors.New("bucketName is empty")
-    }
+### 第5步：错误处理完善（0.5天）
+1. 定义特定的错误类型
+2. 添加错误码映射
+3. 实现错误消息本地化
+4. 添加调试日志
 
-    output = &GetZipPolicyOutput{}
-    err = obsClient.doActionWithBucket("GetZipPolicy", HTTP_GET, bucketName,
-        newSubResourceSerial(SubResourceZip), output, extensions)
-    if err != nil {
-        output = nil
-    }
-    return
-}
+## 技术细节
+- 使用现有的 XML 序列化框架
+- 遵循现有的错误处理模式
+- 使用函数式选项模式
+- 保持与现有 API 的一致性
 
-// DeleteZipPolicy deletes ZIP extraction policy
-func (obsClient ObsClient) DeleteZipPolicy(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
-    if bucketName == "" {
-        return nil, errors.New("bucketName is empty")
-    }
+## 时间估算
+总计：5天
 
-    output = &BaseModel{}
-    err = obsClient.doActionWithBucket("DeleteZipPolicy", HTTP_DELETE, bucketName,
-        newSubResourceSerial(SubResourceZip), output, extensions)
-    if err != nil {
-        output = nil
-    }
-    return
-}
-```
-
-### 3. 时间估算
-- SetZipPolicy 实现：20 分钟
-- GetZipPolicy 实现：15 分钟
-- DeleteZipPolicy 实现：15 分钟
-- 测试和调试：20 分钟
-- **总计**: 约 1.2 小时（0.15 天）
-
-## 技术要点
-
-### 方法命名
-- 遵循现有命名模式
-- 使用描述性名称
-
-### 参数验证
-- 验证输入不为 nil
-- 验证桶名称不为空
+## 风险评估
+- 中等风险：需要确保与现有策略实现的一致性
+- 需要处理 XML 解析的边界情况
+- 错误处理需要覆盖所有场景

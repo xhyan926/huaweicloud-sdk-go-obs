@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created_at": "2024-01-01T00:00:00Z",
+    "environment": "local",
+    "description": "OBS SDK Go性能基线数据"
+  },
+  "baselines": [
+    {
+      "test_name": "BenchmarkLight_PutObject_SmallFile",
+      "throughput_mb_per_sec": 150.0,
+      "latency_ms": 45.0,
+      "allocations_per_op": 25,
+      "bytes_per_op": 1048576,
+      "cpu_percent": 45.2,
+      "memory_mb": 512,
+      "gc_count": 25,
+      "is_stable": true,
+      "timestamp": "2024-01-01T00:00:00Z",
+      "environment": "local"
+    },
+    {
+      "test_name": "BenchmarkLight_GetObject_SmallFile",
+      "throughput_mb_per_sec": 200.0,
+      "latency_ms": 32.0,
+      "allocations_per_op": 20,
+      "bytes_per_op": 1048576,
+      "cpu_percent": 35.5,
+      "memory_mb": 480,
+      "gc_count": 20,
+      "is_stable": true,
+      "timestamp": "2024-01-01T00:00:00Z",
+      "environment": "local"
+    },
+    {
+      "test_name": "BenchmarkDeep_PutObject_LargeFile",
+      "throughput_mb_per_sec": 50.0,
+      "latency_ms": 120.0,
+      "allocations_per_op": 30,
+      "bytes_per_op": 104857600,
+      "cpu_percent": 65.0,
+      "memory_mb": 1024,
+      "gc_count": 35,
+      "is_stable": true,
+      "timestamp": "2024-01-01T00:00:00Z",
+      "environment": "local"
+    },
+    {
+      "test_name": "BenchmarkDeep_GetObject_LargeFile",
+      "throughput_mb_per_sec": 100.0,
+      "latency_ms": 80.0,
+      "allocations_per_op": 25,
+      "bytes_per_op": 104857600,
+      "cpu_percent": 55.0,
+      "memory_mb": 768,
+      "gc_count": 30,
+      "is_stable": true,
+      "timestamp": "2024-01-01T00:00:00Z",
+      "environment": "local"
+    },
+    {
+      "test_name": "BenchmarkConcurrent_PutObject_Concurrency-100",
+      "throughput_mb_per_sec": 500.0,
+      "latency_ms": 15.0,
+      "allocations_per_op": 28,
+      "bytes_per_op": 1048576,
+      "cpu_percent": 75.0,
+      "memory_mb": 850,
+      "gc_count": 40,
+      "is_stable": true,
+      "timestamp": "2024-01-01T00:00:00Z",
+      "environment": "local"
+    },
+    {
+      "test_name": "BenchmarkLight_MultipartUpload_10MB",
+      "throughput_mb_per_sec": 100.0,
+      "latency_ms": 60.0,
+      "allocations_per_op": 40,
+      "bytes_per_op": 10485760,
+      "cpu_percent": 50.0,
+      "memory_mb": 620,
+      "gc_count": 28,
+      "is_stable": true,
+      "timestamp": "2024-01-01T00:00:00Z",
+      "environment": "local"
+    }
+  ],
+  "configuration": {
+    "performance_threshold": 0.9,
+    "stability_threshold": 3,
+    "baseline_max_age_days": 30
+  },
+  "notes": {
+    "collection_method": "Initial baseline collection from local environment",
+    "recommendations": [
+      "Run in consistent environment for stable baselines",
+      "Update baselines periodically to reflect system changes",
+      "Investigate performance degradation immediately",
+      "Separate light and deep test baselines"
+    ]
+  }
+}
