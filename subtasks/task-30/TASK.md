@@ -34,4 +34,4 @@
 - [ ] 符合现有架构模式
 
 ## 状态
-pending
+completed

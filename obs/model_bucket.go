@@ -624,3 +624,123 @@ type GetDisPolicyOutput struct {
 type DeleteDisPolicyInput struct {
 	Bucket string `xml:"-"`
 }
+
+// DecompressionRule defines a single decompression rule configuration
+type DecompressionRule struct {
+	ID            string   `json:"id"`
+	Project       string   `json:"project"`
+	Agency        string   `json:"agency"`
+	Events        []string `json:"events"`
+	Prefix        string   `json:"prefix,omitempty"`
+	Suffix        string   `json:"suffix"`
+	Overwrite     int      `json:"overwrite"`
+	DecompressPath string  `json:"decompressPath,omitempty"`
+	PolicyType    string   `json:"policyType"`
+}
+
+// SetBucketDecompressionInput is the input parameter of SetBucketDecompression function
+type SetBucketDecompressionInput struct {
+	Bucket        string                `xml:"-"`
+	Rules         []DecompressionRule  `json:"rules"`
+}
+
+// GetBucketDecompressionInput is the input parameter of GetBucketDecompression function
+type GetBucketDecompressionInput struct {
+	Bucket string `xml:"-"`
+}
+
+// GetBucketDecompressionOutput is the result of GetBucketDecompression function
+type GetBucketDecompressionOutput struct {
+	BaseModel
+	Rules string `xml:"rules"`
+}
+
+// DeleteBucketDecompressionInput is the input parameter of DeleteBucketDecompression function
+type DeleteBucketDecompressionInput struct {
+	Bucket string `xml:"-"`
+}
+
+// trans implements ISerializable interface for SetBucketDecompressionInput
+func (input SetBucketDecompressionInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceDecompression): ""}
+	jsonBytes, jsonErr := json.Marshal(input)
+	if jsonErr != nil {
+		return nil, nil, nil, jsonErr
+	}
+	headers = map[string][]string{
+		"Content-Type": {"application/json"},
+	}
+	data = strings.NewReader(string(jsonBytes))
+	return
+}
+
+// PutBucketWormConfigurationInput is the input parameter of PutBucketWorm function
+type PutBucketWormConfigurationInput struct {
+	Bucket             string                    `xml:"-"`
+	WormRetentionMode  WormRetentionModeType     `xml:"WormRetentionMode"`
+	WormRetentionPeriod int                       `xml:"WormRetentionPeriod"`
+	DefaultRetention    DefaultRetention         `xml:"DefaultRetention"`
+	ExtendRetention    ExtendRetention          `xml:"ExtendRetention"`
+}
+
+// DefaultRetention defines the default retention settings
+type DefaultRetention struct {
+	Days    int `xml:"Days"`
+	Years   int `xml:"Years"`
+	Mode    string `xml:"Mode"`
+}
+
+// ExtendRetention defines the extended retention settings
+type ExtendRetention struct {
+	Days int `xml:"Days"`
+	Years int `xml:"Years"`
+	Mode string `xml:"Mode"`
+}
+
+// GetBucketWormConfigurationOutput is the result of GetBucketWorm function
+type GetBucketWormConfigurationOutput struct {
+	BaseModel
+	IsWormEnabled   string                   `xml:"IsWormEnabled"`
+	WormRetentionMode  WormRetentionModeType  `xml:"WormRetentionMode"`
+	WormRetentionPeriod int                  `xml:"WormRetentionPeriod"`
+	ExtendRetention    ExtendRetention        `xml:"ExtendRetention"`
+	AccessLogEnabled bool                    `xml:"AccessLogEnabled"`
+	ObjectSaveDays   int                     `xml:"ObjectSaveDays"`
+}
+
+// GetBucketWormConfigurationInput is the input parameter of GetBucketWorm function
+type GetBucketWormConfigurationInput struct {
+	Bucket string `xml:"-"`
+}
+
+// DeleteBucketWormConfigurationInput is the input parameter of DeleteBucketWormConfiguration function
+type DeleteBucketWormConfigurationInput struct {
+	Bucket string `xml:"-"`
+}
+
+// trans implements ISerializable interface for PutBucketWormConfigurationInput
+func (input PutBucketWormConfigurationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceWormPolicy): ""}
+	xmlBytes, xmlErr := xml.Marshal(input)
+	if xmlErr != nil {
+		return nil, nil, nil, xmlErr
+	}
+	headers = map[string][]string{
+		"Content-Type": {"application/xml"},
+	}
+	data = strings.NewReader(string(xmlBytes))
+	return
+}
+
+// trans implements ISerializable interface for GetBucketWormConfigurationInput
+func (input GetBucketWormConfigurationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceWormPolicy): ""}
+	return
+}
+
+// trans implements ISerializable interface for DeleteBucketWormConfigurationInput
+func (input DeleteBucketWormConfigurationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceWormPolicy): ""}
+	data = strings.NewReader("")
+	return
+}

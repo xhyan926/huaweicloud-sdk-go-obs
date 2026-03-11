@@ -216,7 +216,16 @@ const (
 	MIN_CERTIFICATE_NAME_LENGTH = 3
 	CERTIFICATE_FIELD_NAME      = "CERTIFICATE ID SIZE"
 	NAME_LENGTH                 = "Name Length"
-	XML_SIZE                    = "XML SIZE"
+	XML_SIZE                          = "XML SIZE"
+
+	MAX_ID_LENGTH                      = 256
+	MIN_ID_LENGTH                      = 1
+	MAX_PROJECT_ID_LENGTH              = 256
+	MAX_AGENCY_NAME_LENGTH             = 256
+	MAX_DECOMPRESS_PATH_LENGTH        = 800
+	MAX_PREFIX_LENGTH                  = 1023
+	MIN_SUFFIX_LENGTH                  = 4
+	MAX_RULES_COUNT                    = 10
 )
 
 var (
@@ -322,6 +331,7 @@ var (
 		"publicaccessblock":            true,
 		"bucketstatus":                 true,
 		"policystatus":                 true,
+		"obscompresspolicy":           true,
 	}
 
 	obsStorageClasses = []string{

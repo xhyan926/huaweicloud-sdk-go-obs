@@ -1080,3 +1080,105 @@ func (obsClient ObsClient) DeleteDisPolicy(bucketName string, extensions ...exte
 	}
 	return
 }
+
+// PutBucketWormConfiguration sets bucket WORM configuration.
+//
+// You can use this API to configure WORM (Write Once Read Many) policy for a bucket.
+// WORM policy enables object lock functionality to protect objects from being deleted or overwritten.
+func (obsClient ObsClient) PutBucketWormConfiguration(input *PutBucketWormConfigurationInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("PutBucketWormConfigurationInput is nil")
+	}
+	if input.Bucket == "" {
+		return nil, errors.New("PutBucketWormConfigurationInput: bucket is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("PutBucketWormConfiguration", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketWormConfiguration gets bucket WORM configuration.
+//
+// You can use this API to obtain WORM configuration of a bucket.
+func (obsClient ObsClient) GetBucketWormConfiguration(bucketName string, extensions ...extensionOptions) (output *GetBucketWormConfigurationOutput, err error) {
+	if bucketName == "" {
+		return nil, errors.New("GetBucketWormConfiguration: bucketName is empty")
+	}
+
+	output = &GetBucketWormConfigurationOutput{}
+	err = obsClient.doActionWithBucket("GetBucketWormConfiguration", HTTP_GET, bucketName, newSubResourceSerial(SubResourceWormPolicy), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketWormConfiguration deletes bucket WORM configuration.
+//
+// You can use this API to delete WORM configuration of a bucket.
+func (obsClient ObsClient) DeleteBucketWormConfiguration(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if bucketName == "" {
+		return nil, errors.New("DeleteBucketWormConfiguration: bucketName is empty")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("DeleteBucketWormConfiguration", HTTP_DELETE, bucketName, newSubResourceSerial(SubResourceWormPolicy), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// SetBucketDecompression sets bucket decompression policy.
+//
+// You can use this API to set bucket decompression policy. The interface is idempotent.
+// If the same policy content already exists on the bucket, the status code returned is 200;
+// otherwise, the status code returned is 201.
+func (obsClient ObsClient) SetBucketDecompression(input *SetBucketDecompressionInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetBucketDecompression: input is nil")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetBucketDecompression", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketDecompression gets bucket decompression policy.
+//
+// You can use this API to get the bucket decompression policy.
+func (obsClient ObsClient) GetBucketDecompression(input *GetBucketDecompressionInput, extensions ...extensionOptions) (output *GetBucketDecompressionOutput, err error) {
+	if input == nil {
+		return nil, errors.New("GetBucketDecompression: input is nil")
+	}
+
+	output = &GetBucketDecompressionOutput{}
+	err = obsClient.doActionWithBucket("GetBucketDecompression", HTTP_GET, input.Bucket, newSubResourceSerial(SubResourceDecompression), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketDecompression deletes bucket decompression policy.
+//
+// You can use this API to delete the bucket decompression policy.
+func (obsClient ObsClient) DeleteBucketDecompression(input *DeleteBucketDecompressionInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("DeleteBucketDecompression: input is nil")
+	}
+
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("DeleteBucketDecompression", HTTP_DELETE, input.Bucket, newSubResourceSerial(SubResourceDecompression), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}

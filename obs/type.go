@@ -141,6 +141,12 @@ const (
 
 	// SubResourceDisPolicy subResource value: dis_policy
 	SubResourceDisPolicy SubResourceType = "dis_policy"
+
+	// SubResourceDecompression subResource value: obscompresspolicy
+	SubResourceDecompression SubResourceType = "obscompresspolicy"
+
+	// SubResourceWormPolicy subResource value: worm
+	SubResourceWormPolicy SubResourceType = "worm"
 )
 
 // objectKeyType defines the objectKey value
@@ -384,6 +390,31 @@ type BucketType string
 const (
 	OBJECT BucketType = "OBJECT"
 	POSIX  BucketType = "POSIX"
+)
+
+// WormBucketStatusType defines bucket WORM status type
+type WormBucketStatusType string
+
+const (
+	// WormBucketStatusDisabled bucket WORM status: Disabled
+	WormBucketStatusDisabled WormBucketStatusType = "Disabled"
+
+	// WormBucketStatusEnabled bucket WORM status: Enabled
+	WormBucketStatusEnabled WormBucketStatusType = "Enabled"
+)
+
+// WormRetentionModeType defines WORM retention mode
+type WormRetentionModeType string
+
+const (
+	// WormRetentionModeCompliance WORM retention mode: Compliance
+	WormRetentionModeCompliance WormRetentionModeType = "Compliance"
+
+	// WormRetentionModeGovernance WORM retention mode: Governance
+	WormRetentionModeGovernance WormRetentionModeType = "Governance"
+
+	// WormRetentionModeNone WORM retention mode: None
+	WormRetentionModeNone WormRetentionModeType = "None"
 )
 
 // RedundancyType defines type of redundancyType

@@ -40,4 +40,4 @@
 - [ ] WORM 约束测试覆盖完整
 
 ## 状态
-pending
+completed
