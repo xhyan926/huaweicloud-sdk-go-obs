@@ -1077,6 +1077,16 @@ func convertFetchJobToJSON(input SetBucketFetchJobInput) (data string, err error
 	return
 }
 
+// convertDisPolicyToJSON converts DisPolicyConfiguration into json format
+func convertDisPolicyToJSON(config DisPolicyConfiguration) (data string, err error) {
+	jsonByte, err := json.Marshal(config)
+	if err != nil {
+		return "", err
+	}
+	data = string(jsonByte)
+	return
+}
+
 func parseStringToFSStatusType(value string) (ret FSStatusType) {
 	switch value {
 	case "Enabled":

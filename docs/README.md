@@ -9,6 +9,7 @@
 ```
 docs/
 ├── README.md                        # 文档总索引（本文件）
+├── API_DEVELOPMENT_GUIDE.md         # API 开发规范指南 ⭐
 ├── replication/                     # 跨区域复制
 │   └── README.md
 ├── dis_policy/                      # DIS 事件通知
@@ -17,6 +18,8 @@ docs/
 ├── lifecycle/                       # 生命周期管理
 └── multipart/                       # 分块上传
 ```
+
+> 💡 **开发者注意**: 如果需要为 SDK 添加新功能或 API，请先阅读 [API 开发规范指南](./API_DEVELOPMENT_GUIDE.md)。该指南包含了完整的数据结构设计规则、trans() 方法实现模板和常见错误避免方法。
 
 ## 快速导航
 

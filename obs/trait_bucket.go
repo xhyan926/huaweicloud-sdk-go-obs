@@ -322,7 +322,7 @@ func (input SetBucketDisPolicyInput) trans(isObs bool) (params map[string]string
 	params = map[string]string{string(SubResourceDisPolicy): ""}
 	headers = make(map[string][]string, 1)
 	headers[HEADER_CONTENT_TYPE] = []string{mimeTypes["json"]}
-	data = input.DisPolicyConfiguration
+	data, err = convertDisPolicyToJSON(input.DisPolicyConfiguration)
 	return
 }
 

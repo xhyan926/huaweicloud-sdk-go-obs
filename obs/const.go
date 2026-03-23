@@ -289,6 +289,7 @@ var (
 		"modify":                       true,
 		"position":                     true,
 		"replication":                  true,
+		"dispolicy":                    true,
 		"response-content-type":        true,
 		"response-content-language":    true,
 		"response-expires":             true,
