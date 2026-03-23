@@ -1,0 +1,11 @@
+{
+  "dis": {
+    "stream": "your-dis-stream-name",
+    "project": "your-dis-project-id",
+    "agency": "your-iam-agency-name"
+  },
+  "replication": {
+    "destBucket": "your-dest-bucket-name",
+    "location": "cn-south-1"
+  }
+}

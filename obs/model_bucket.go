@@ -53,6 +53,30 @@ type SetBucketMirrorBackToSourceInput struct {
 	Rules  string `json:"body"`
 }
 
+// SetBucketReplicationInput is the input parameter of SetBucketReplication function
+type SetBucketReplicationInput struct {
+	Bucket                   string
+	ReplicationConfiguration ReplicationConfiguration `xml:"-"`
+}
+
+// GetBucketReplicationOutput is the result of GetBucketReplication function
+type GetBucketReplicationOutput struct {
+	BaseModel
+	ReplicationConfiguration ReplicationConfiguration `xml:"ReplicationConfiguration"`
+}
+
+// SetBucketDisPolicyInput is the input parameter of SetBucketDisPolicy function
+type SetBucketDisPolicyInput struct {
+	Bucket                 string
+	DisPolicyConfiguration DisPolicyConfiguration `json:"disPolicyConfiguration"`
+}
+
+// GetBucketDisPolicyOutput is the result of GetBucketDisPolicy function
+type GetBucketDisPolicyOutput struct {
+	BaseModel
+	DisPolicyConfiguration string `json:"body"`
+}
+
 // Content defines the object content properties
 type Domain struct {
 	DomainName    string `xml:"DomainName"`

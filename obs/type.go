@@ -129,6 +129,12 @@ const (
 
 	// SubResourcePublicPolicyStatus subResource value: policyStatus
 	SubResourceBucketPolicyPublicStatus SubResourceType = "policyStatus"
+
+	// SubResourceReplication subResource value: replication
+	SubResourceReplication SubResourceType = "replication"
+
+	// SubResourceDisPolicy subResource value: disPolicy
+	SubResourceDisPolicy SubResourceType = "disPolicy"
 )
 
 // objectKeyType defines the objectKey value

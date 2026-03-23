@@ -1,0 +1,3 @@
+# Test configuration files (contain sensitive credentials)
+test.config.json
+**/test.config.json

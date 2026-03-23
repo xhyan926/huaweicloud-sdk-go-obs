@@ -298,6 +298,34 @@ func (input SetBucketMirrorBackToSourceInput) trans(isObs bool) (params map[stri
 	return
 }
 
+func (input SetBucketReplicationInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceReplication): ""}
+	headers = make(map[string][]string, 1)
+	reader, md5, convertErr := ConvertRequestToIoReaderV2(input.ReplicationConfiguration, false)
+	if convertErr != nil {
+		return nil, nil, nil, convertErr
+	}
+	readerLen, err := GetReaderLen(reader)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	err = validateLength(int(readerLen), 0, 50*1024, XML_SIZE)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	data = reader
+	headers = map[string][]string{HEADER_MD5_CAMEL: {md5}}
+	return
+}
+
+func (input SetBucketDisPolicyInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
+	params = map[string]string{string(SubResourceDisPolicy): ""}
+	headers = make(map[string][]string, 1)
+	headers[HEADER_CONTENT_TYPE] = []string{mimeTypes["json"]}
+	data = input.DisPolicyConfiguration
+	return
+}
+
 func (input DeleteBucketCustomDomainInput) trans(isObs bool) (params map[string]string, headers map[string][]string, data interface{}, err error) {
 	return trans(SubResourceCustomDomain, input)
 }

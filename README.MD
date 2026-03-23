@@ -1,3 +1,17 @@
+Version 3.26.0
+
+New Features:
+1. Added cross-region replication APIs, including SetBucketReplication, GetBucketReplication, and DeleteBucketReplication.
+2. Added DIS event notification APIs, including SetBucketDisPolicy, GetBucketDisPolicy, and DeleteBucketDisPolicy.
+
+Documentation & Demo:
+1. Added API documentation for cross-region replication feature (docs/replication/).
+2. Added API documentation for DIS event notification feature (docs/dis_policy/).
+
+Resolved Issues:
+
+-----------------------------------------------------------------------------------
+
 Version 3.25.9
 
 New Features:

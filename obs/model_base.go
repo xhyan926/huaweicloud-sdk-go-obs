@@ -396,6 +396,67 @@ type BucketPublicStatus struct {
 	IsPublic bool     `xml:"IsPublic"`
 }
 
+// ReplicationDestination defines the destination configuration for replication
+type ReplicationDestination struct {
+	XMLName      xml.Name         `xml:"Destination"`
+	Bucket       string           `xml:"Bucket"`
+	StorageClass StorageClassType `xml:"StorageClass,omitempty"`
+	Location     string           `xml:"Location,omitempty"`
+}
+
+// PrefixSet defines the prefix set for replication
+type PrefixSet struct {
+	Prefixes []string `xml:"Prefix"`
+}
+
+// ReplicationPrefix defines the prefix configuration for replication
+type ReplicationPrefix struct {
+	PrefixSet PrefixSet `xml:"PrefixSet"`
+}
+
+// ReplicationRule defines a replication rule
+type ReplicationRule struct {
+	XMLName                     xml.Name               `xml:"Rule"`
+	ID                          string                 `xml:"Id,omitempty"`
+	Status                      RuleStatusType         `xml:"Status"`
+	Prefix                      *ReplicationPrefix     `xml:"Prefix,omitempty"`
+	Destination                 ReplicationDestination `xml:"Destination"`
+	HistoricalObjectReplication string                 `xml:"HistoricalObjectReplication,omitempty"`
+}
+
+// ReplicationConfiguration defines the replication configuration
+type ReplicationConfiguration struct {
+	XMLName xml.Name          `xml:"ReplicationConfiguration"`
+	Rules   []ReplicationRule `xml:"Rule"`
+}
+
+// DisPolicyRule defines a DIS event notification policy rule
+type DisPolicyRule struct {
+	// Rule ID, required
+	ID string `json:"id"`
+	// DIS stream name, required
+	Stream string `json:"stream"`
+	// Project ID, required
+	Project string `json:"project"`
+	// Event list (string array), required
+	// Supported events: ObjectCreated:*, ObjectCreated:Put, ObjectCreated:Post,
+	// ObjectCreated:Copy, ObjectCreated:CompleteMultipartUpload,
+	// ObjectRemoved:*, ObjectRemoved:Delete, ObjectRemoved:DeleteMarkerCreated
+	Events []string `json:"events"`
+	// Object name prefix, optional
+	Prefix string `json:"prefix,omitempty"`
+	// Object name suffix, optional
+	Suffix string `json:"suffix,omitempty"`
+	// IAM agency name, required
+	Agency string `json:"agency"`
+}
+
+// DisPolicyConfiguration defines the DIS policy configuration
+type DisPolicyConfiguration struct {
+	// Rules array, 1-10 rules allowed
+	Rules []DisPolicyRule `json:"rules"`
+}
+
 // HttpHeader defines the standard metadata
 type HttpHeader struct {
 	CacheControl       string

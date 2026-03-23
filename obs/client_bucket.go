@@ -81,6 +81,84 @@ func (obsClient ObsClient) GetBucketMirrorBackToSource(bucketName string, extens
 	return
 }
 
+// SetBucketReplication sets bucket cross-region replication configuration.
+//
+// You can use this API to set replication configuration for a bucket to enable cross-region replication.
+func (obsClient ObsClient) SetBucketReplication(input *SetBucketReplicationInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetBucketReplicationInput is nil")
+	}
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetBucketReplication", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketReplication gets bucket cross-region replication configuration.
+//
+// You can use this API to obtain the replication configuration of a bucket.
+func (obsClient ObsClient) GetBucketReplication(bucketName string, extensions ...extensionOptions) (output *GetBucketReplicationOutput, err error) {
+	output = &GetBucketReplicationOutput{}
+	err = obsClient.doActionWithBucketV2("GetBucketReplication", HTTP_GET, bucketName, newSubResourceSerial(SubResourceReplication), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketReplication deletes bucket cross-region replication configuration.
+//
+// You can use this API to delete the replication configuration of a bucket.
+func (obsClient ObsClient) DeleteBucketReplication(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucketV2("DeleteBucketReplication", HTTP_DELETE, bucketName, newSubResourceSerial(SubResourceReplication), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// SetBucketDisPolicy sets bucket DIS event notification policy.
+//
+// You can use this API to set DIS event notification policy for a bucket.
+func (obsClient ObsClient) SetBucketDisPolicy(input *SetBucketDisPolicyInput, extensions ...extensionOptions) (output *BaseModel, err error) {
+	if input == nil {
+		return nil, errors.New("SetBucketDisPolicyInput is nil")
+	}
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucket("SetBucketDisPolicy", HTTP_PUT, input.Bucket, input, output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// GetBucketDisPolicy gets bucket DIS event notification policy.
+//
+// You can use this API to obtain the DIS event notification policy of a bucket.
+func (obsClient ObsClient) GetBucketDisPolicy(bucketName string, extensions ...extensionOptions) (output *GetBucketDisPolicyOutput, err error) {
+	output = &GetBucketDisPolicyOutput{}
+	err = obsClient.doActionWithBucketV2("GetBucketDisPolicy", HTTP_GET, bucketName, newSubResourceSerial(SubResourceDisPolicy), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
+// DeleteBucketDisPolicy deletes bucket DIS event notification policy.
+//
+// You can use this API to delete the DIS event notification policy of a bucket.
+func (obsClient ObsClient) DeleteBucketDisPolicy(bucketName string, extensions ...extensionOptions) (output *BaseModel, err error) {
+	output = &BaseModel{}
+	err = obsClient.doActionWithBucketV2("DeleteBucketDisPolicy", HTTP_DELETE, bucketName, newSubResourceSerial(SubResourceDisPolicy), output, extensions)
+	if err != nil {
+		output = nil
+	}
+	return
+}
+
 // ListBuckets lists buckets.
 //
 // You can use this API to obtain the bucket list. In the list, bucket names are displayed in lexicographical order.
