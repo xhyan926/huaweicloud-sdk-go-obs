@@ -69,7 +69,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.Assert.assertTrue;
 
 public class TestTools {
-    private static final File file = new File("app/src/test/resource/test_data.properties");
+    private static final File file;
+
+    static {
+        String env = System.getProperty("test.env", "");
+        String fileName = env.isEmpty()
+            ? "test_data.properties"
+            : "test_data_" + env + ".properties";
+        file = new File("app/src/test/resource/" + fileName);
+    }
 
     public static File getPropertiesFile() {
         return file;
