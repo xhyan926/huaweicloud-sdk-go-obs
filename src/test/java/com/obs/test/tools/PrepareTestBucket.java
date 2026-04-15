@@ -12,7 +12,15 @@ import java.util.Locale;
 import static org.junit.Assert.assertEquals;
 
 public class PrepareTestBucket implements TestRule {
-    File configFile = new File("./app/src/test/resource/test_data.properties");
+    File configFile;
+
+    {
+        String env = System.getProperty("test.env", "");
+        String fileName = env.isEmpty()
+            ? "test_data.properties"
+            : "test_data_" + env + ".properties";
+        configFile = new File("./app/src/test/resource/" + fileName);
+    }
 
     /**
      * 在用例开始前创建桶，并在用例执行完成后将桶删除
@@ -27,7 +35,8 @@ public class PrepareTestBucket implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 String location = PropertiesTools.getInstance(configFile).getProperties("environment.location");
-                String bucketName = description.getMethodName().replace("_", "-").toLowerCase(Locale.ROOT);
+                String bucketName = description.getMethodName().replace("_", "-")
+                    .replace("[", "").replace("]", "").toLowerCase(Locale.ROOT);
                 boolean isPosix = Boolean.parseBoolean(PropertiesTools.getInstance(configFile).getProperties("isPosix"));
                 ObsClient obsClient = TestTools.getPipelineEnvironment();
                 assertEquals(200, TestTools.createBucket(obsClient, bucketName, location, isPosix).getStatusCode());

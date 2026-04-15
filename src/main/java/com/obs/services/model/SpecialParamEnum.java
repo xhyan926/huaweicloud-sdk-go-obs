@@ -204,7 +204,17 @@ public enum SpecialParamEnum {
 
     SYM_LINK("symlink"),
 
-    BUCKET_QOS("x-obs-qosInfo");
+    BUCKET_QOS("x-obs-qosInfo"),
+
+    /**
+     * Set or obtain the default WORM policy of a bucket.
+     */
+    OBJECT_LOCK("object-lock"),
+
+    /**
+     * Set or obtain the WORM protection policy of an object.
+     */
+    RETENTION("retention");
     
     /**
      * Specify the corresponding code in the database and the external code.

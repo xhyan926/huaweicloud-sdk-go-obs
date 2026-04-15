@@ -56,6 +56,9 @@ import com.obs.services.model.trash.DeleteBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashResult;
 import com.obs.services.model.trash.SetBucketTrashRequest;
+import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
+import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
+import com.obs.services.model.objectlock.SetObjectLockConfigurationRequest;
 
 public abstract class AbstractBucketAdvanceClient extends AbstractBucketClient {
     /*
@@ -867,6 +870,34 @@ public abstract class AbstractBucketAdvanceClient extends AbstractBucketClient {
                 @Override
                 public HeaderResponse action() throws ServiceException {
                     return AbstractBucketAdvanceClient.this.deleteBucketTrashImpl(deleteBucketTrashRequest);
+                }
+            });
+    }
+
+    @Override
+    public HeaderResponse setObjectLockConfiguration(final SetObjectLockConfigurationRequest request)
+        throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "SetObjectLockConfigurationRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("setObjectLockConfiguration", request.getBucketName(),
+            new ActionCallbackWithResult<HeaderResponse>() {
+                @Override
+                public HeaderResponse action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.setObjectLockConfigurationImpl(request);
+                }
+            });
+    }
+
+    @Override
+    public GetObjectLockConfigurationResult getObjectLockConfiguration(
+        final GetObjectLockConfigurationRequest request) throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "GetObjectLockConfigurationRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("getObjectLockConfiguration", request.getBucketName(),
+            new ActionCallbackWithResult<GetObjectLockConfigurationResult>() {
+                @Override
+                public GetObjectLockConfigurationResult action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.getObjectLockConfigurationImpl(request);
                 }
             });
     }

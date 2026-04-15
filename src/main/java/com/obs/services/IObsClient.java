@@ -166,6 +166,10 @@ import com.obs.services.model.trash.DeleteBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashResult;
 import com.obs.services.model.trash.SetBucketTrashRequest;
+import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
+import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
+import com.obs.services.model.objectlock.SetObjectLockConfigurationRequest;
+import com.obs.services.model.objectlock.SetObjectRetentionRequest;
 
 /**
  * Basic OBS interface
@@ -2360,6 +2364,23 @@ public interface IObsClient extends IObsBucketExtendClient {
     GetBucketTrashResult getBucketTrash(GetBucketTrashRequest getBucketTrashRequest) throws ObsException;
 
     HeaderResponse deleteBucketTrash(DeleteBucketTrashRequest deleteBucketTrashRequest) throws ObsException;
+
+    HeaderResponse setObjectLockConfiguration(SetObjectLockConfigurationRequest request) throws ObsException;
+
+    GetObjectLockConfigurationResult getObjectLockConfiguration(GetObjectLockConfigurationRequest request) throws ObsException;
+
+    /**
+     * Set object-level WORM protection policy.
+     *
+     * @param request
+     *            Request parameters for setting object retention
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     * @since 3.24.4
+     */
+    HeaderResponse setObjectRetention(SetObjectRetentionRequest request) throws ObsException;
 
     HeaderResponse setInventoryConfiguration(SetInventoryConfigurationRequest request) throws ObsException;
 
