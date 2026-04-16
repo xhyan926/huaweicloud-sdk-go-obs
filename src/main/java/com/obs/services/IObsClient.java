@@ -56,6 +56,8 @@ import com.obs.services.model.BucketLocationResponse;
 import com.obs.services.model.BucketLoggingConfiguration;
 import com.obs.services.model.BucketMetadataInfoRequest;
 import com.obs.services.model.BucketMetadataInfoResult;
+import com.obs.services.model.OptionsInfoRequest;
+import com.obs.services.model.OptionsInfoResult;
 import com.obs.services.model.BucketNotificationConfiguration;
 import com.obs.services.model.BucketPolicyResponse;
 import com.obs.services.model.BucketQuota;
@@ -911,6 +913,19 @@ public interface IObsClient extends IObsBucketExtendClient {
      * @since 3.20.3
      */
     HeaderResponse deleteBucketCors(BaseBucketRequest request) throws ObsException;
+
+    /**
+     * Send a bucket preflight request for CORS.
+     *
+     * @param request
+     *            Request parameters for the bucket preflight request
+     * @return Response to the bucket preflight request
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     * @since 3.20.3
+     */
+    OptionsInfoResult optionsBucket(OptionsInfoRequest request) throws ObsException;
 
     /**
      * Obtain the logging settings of a bucket.
