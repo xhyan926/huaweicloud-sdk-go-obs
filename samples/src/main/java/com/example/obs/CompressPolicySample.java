@@ -15,6 +15,7 @@ package com.example.obs;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.obs.services.ObsClient;
 import com.obs.services.ObsConfiguration;
@@ -32,23 +33,24 @@ import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
  * (compress) policy of a bucket using the OBS SDK for Java.
  */
 public class CompressPolicySample {
-    private static final String endPoint = "https://your-endpoint";
+    private static final String END_POINT = "https://your-endpoint";
 
-    private static final String ak = "*** Provide your Access Key ***";
+    private static final String AK = "*** Provide your Access Key ***";
 
-    private static final String sk = "*** Provide your Secret Key ***";
+    private static final String SK = "*** Provide your Secret Key ***";
+
+    private static final String BUCKET_NAME = "my-obs-bucket-demo";
 
     private static ObsClient obsClient;
 
-    private static String bucketName = "my-obs-bucket-demo";
 
     public static void main(String[] args) {
         ObsConfiguration config = new ObsConfiguration();
         config.setSocketTimeout(30000);
         config.setConnectionTimeout(10000);
-        config.setEndPoint(endPoint);
+        config.setEndPoint(END_POINT);
         try {
-            obsClient = new ObsClient(ak, sk, config);
+            obsClient = new ObsClient(AK, SK, config);
 
             setBucketCompressPolicy();
 
@@ -66,7 +68,7 @@ public class CompressPolicySample {
             if (obsClient != null) {
                 try {
                     obsClient.close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -80,7 +82,7 @@ public class CompressPolicySample {
         rule.setId("rule-001");
         rule.setProject("your-project-id");
         rule.setAgency("your-agency");
-        rule.setEvents(Arrays.asList("ObjectCreated:*"));
+        rule.setEvents(Collections.singletonList("ObjectCreated:*"));
         rule.setPrefix("input/");
         rule.setSuffix(".zip");
         rule.setOverwrite(0);
@@ -89,11 +91,11 @@ public class CompressPolicySample {
 
         // Step 2: Create configuration with rules
         CompressPolicyConfiguration policyConfig = new CompressPolicyConfiguration();
-        policyConfig.setRules(Arrays.asList(rule));
+        policyConfig.setRules(Collections.singletonList(rule));
 
         // Step 3: Send request
         SetBucketCompressPolicyRequest request =
-                new SetBucketCompressPolicyRequest(bucketName, policyConfig);
+                new SetBucketCompressPolicyRequest(BUCKET_NAME, policyConfig);
         HeaderResponse response = obsClient.setBucketCompressPolicy(request);
         System.out.println("Set compress policy, status code: " + response.getStatusCode() + "\n");
     }
@@ -101,7 +103,7 @@ public class CompressPolicySample {
     private static void getBucketCompressPolicy() throws ObsException {
         System.out.println("Getting bucket compress policy\n");
 
-        GetBucketCompressPolicyRequest request = new GetBucketCompressPolicyRequest(bucketName);
+        GetBucketCompressPolicyRequest request = new GetBucketCompressPolicyRequest(BUCKET_NAME);
         GetBucketCompressPolicyResult result = obsClient.getBucketCompressPolicy(request);
 
         CompressPolicyConfiguration config = result.getCompressPolicyConfiguration();
@@ -123,7 +125,7 @@ public class CompressPolicySample {
     private static void deleteBucketCompressPolicy() throws ObsException {
         System.out.println("Deleting bucket compress policy\n");
 
-        DeleteBucketCompressPolicyRequest request = new DeleteBucketCompressPolicyRequest(bucketName);
+        DeleteBucketCompressPolicyRequest request = new DeleteBucketCompressPolicyRequest(BUCKET_NAME);
         HeaderResponse response = obsClient.deleteBucketCompressPolicy(request);
         System.out.println("Delete compress policy, status code: " + response.getStatusCode() + "\n");
     }
