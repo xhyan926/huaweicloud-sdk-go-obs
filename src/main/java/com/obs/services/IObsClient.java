@@ -166,6 +166,10 @@ import com.obs.services.model.trash.DeleteBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashResult;
 import com.obs.services.model.trash.SetBucketTrashRequest;
+import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
+import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
+import com.obs.services.model.compress.GetBucketCompressPolicyResult;
+import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
 import com.obs.services.model.objectlock.SetObjectLockConfigurationRequest;
@@ -2364,6 +2368,43 @@ public interface IObsClient extends IObsBucketExtendClient {
     GetBucketTrashResult getBucketTrash(GetBucketTrashRequest getBucketTrashRequest) throws ObsException;
 
     HeaderResponse deleteBucketTrash(DeleteBucketTrashRequest deleteBucketTrashRequest) throws ObsException;
+
+    /**
+     * Set the online decompression policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for setting compress policy
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    HeaderResponse setBucketCompressPolicy(SetBucketCompressPolicyRequest request) throws ObsException;
+
+    /**
+     * Get the online decompression policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for getting compress policy
+     * @return The compress policy configuration
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    GetBucketCompressPolicyResult getBucketCompressPolicy(GetBucketCompressPolicyRequest request)
+            throws ObsException;
+
+    /**
+     * Delete the online decompression policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for deleting compress policy
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    HeaderResponse deleteBucketCompressPolicy(DeleteBucketCompressPolicyRequest request) throws ObsException;
 
     HeaderResponse setObjectLockConfiguration(SetObjectLockConfigurationRequest request) throws ObsException;
 

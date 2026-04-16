@@ -107,6 +107,11 @@ import com.obs.services.model.trash.DeleteBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashResult;
 import com.obs.services.model.trash.SetBucketTrashRequest;
+import com.obs.services.model.compress.CompressPolicyConfiguration;
+import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
+import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
+import com.obs.services.model.compress.GetBucketCompressPolicyResult;
+import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
 import com.obs.services.model.objectlock.DefaultRetention;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
@@ -1076,6 +1081,54 @@ public abstract class ObsBucketAdvanceService extends ObsBucketBaseService {
             transRequestPaymentHeaders(deleteBucketTrashRequest, null,
                 this.getIHeaders(deleteBucketTrashRequest.getBucketName())),
             deleteBucketTrashRequest.getUserHeaders());
+        return this.build(response);
+    }
+
+    protected HeaderResponse setBucketCompressPolicyImpl(SetBucketCompressPolicyRequest request) {
+        Map<String, String> requestParams = new HashMap<>();
+        requestParams.put(SpecialParamEnum.OBS_COMPRESS_POLICY.getOriginalStringCode(), "");
+        Map<String, String> headers = new HashMap<>();
+        transRequestPaymentHeaders(request, headers, this.getIHeaders(request.getBucketName()));
+        String jsonBody = JSONChange.objToJson(request.getCompressPolicyConfiguration());
+        if (log.isTraceEnabled()) {
+            log.trace("setBucketCompressPolicy's json is:");
+            log.trace(jsonBody);
+        }
+        headers.put(CommonHeaders.CONTENT_TYPE, Mimetypes.MIMETYPE_JSON);
+        NewTransResult transResult = transRequest(request);
+        transResult.setHeaders(headers);
+        transResult.setParams(requestParams);
+        transResult.setBody(createRequestBody(Mimetypes.MIMETYPE_JSON, jsonBody));
+        Response response = performRequest(transResult, true, false, false, false);
+        return build(response);
+    }
+
+    protected GetBucketCompressPolicyResult getBucketCompressPolicyImpl(GetBucketCompressPolicyRequest request) {
+        Map<String, String> requestParameters = new HashMap<>();
+        requestParameters.put(SpecialParamEnum.OBS_COMPRESS_POLICY.getOriginalStringCode(), "");
+
+        Response httpResponse = performRestGet(request.getBucketName(), null, requestParameters,
+            transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
+            request.getUserHeaders());
+
+        this.verifyResponseContentTypeForJson(httpResponse);
+
+        String body = RestUtils.readBodyFromResponse(httpResponse);
+        CompressPolicyConfiguration config = (CompressPolicyConfiguration) JSONChange
+            .jsonToObj(new CompressPolicyConfiguration(), body);
+
+        GetBucketCompressPolicyResult result = new GetBucketCompressPolicyResult();
+        result.setCompressPolicyConfiguration(config);
+        setHeadersAndStatus(result, httpResponse);
+        return result;
+    }
+
+    protected HeaderResponse deleteBucketCompressPolicyImpl(DeleteBucketCompressPolicyRequest request) {
+        Map<String, String> requestParams = new HashMap<>();
+        requestParams.put(SpecialParamEnum.OBS_COMPRESS_POLICY.getOriginalStringCode(), "");
+        Response response = performRestDelete(request.getBucketName(), null, requestParams,
+            transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
+            request.getUserHeaders());
         return this.build(response);
     }
 

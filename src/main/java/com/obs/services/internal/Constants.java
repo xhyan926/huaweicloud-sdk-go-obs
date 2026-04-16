@@ -347,6 +347,6 @@ public class Constants {
                     "x-image-save-bucket", "x-image-save-object", "x-image-process", "x-obs-sse-kms-key-project-id",
                     "x-oss-process", "ignore-sign-in-query", "listcontentsummary", "multilistcontentsummary",
                     "x-obs-trash", "getcontentsummary", "select", "select-type", "symlink", "x-obs-qosinfo",
-                    "x-obs-snapshot", "x-obs-snapshotroot", "object-lock", "retention"));
+                    "x-obs-snapshot", "x-obs-snapshotroot", "object-lock", "retention", "obscompresspolicy"));
 
 }

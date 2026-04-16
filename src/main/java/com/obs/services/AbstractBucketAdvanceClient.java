@@ -56,6 +56,10 @@ import com.obs.services.model.trash.DeleteBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashRequest;
 import com.obs.services.model.trash.GetBucketTrashResult;
 import com.obs.services.model.trash.SetBucketTrashRequest;
+import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
+import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
+import com.obs.services.model.compress.GetBucketCompressPolicyResult;
+import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
 import com.obs.services.model.objectlock.SetObjectLockConfigurationRequest;
@@ -870,6 +874,47 @@ public abstract class AbstractBucketAdvanceClient extends AbstractBucketClient {
                 @Override
                 public HeaderResponse action() throws ServiceException {
                     return AbstractBucketAdvanceClient.this.deleteBucketTrashImpl(deleteBucketTrashRequest);
+                }
+            });
+    }
+
+    @Override
+    public HeaderResponse setBucketCompressPolicy(final SetBucketCompressPolicyRequest request) throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "SetBucketCompressPolicyRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("setBucketCompressPolicy", request.getBucketName(),
+            new ActionCallbackWithResult<HeaderResponse>() {
+                @Override
+                public HeaderResponse action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.setBucketCompressPolicyImpl(request);
+                }
+            });
+    }
+
+    @Override
+    public GetBucketCompressPolicyResult getBucketCompressPolicy(
+            final GetBucketCompressPolicyRequest request) throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "GetBucketCompressPolicyRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("getBucketCompressPolicy", request.getBucketName(),
+            new ActionCallbackWithResult<GetBucketCompressPolicyResult>() {
+                @Override
+                public GetBucketCompressPolicyResult action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.getBucketCompressPolicyImpl(request);
+                }
+            });
+    }
+
+    @Override
+    public HeaderResponse deleteBucketCompressPolicy(
+            final DeleteBucketCompressPolicyRequest request) throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "DeleteBucketCompressPolicyRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("deleteBucketCompressPolicy", request.getBucketName(),
+            new ActionCallbackWithResult<HeaderResponse>() {
+                @Override
+                public HeaderResponse action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.deleteBucketCompressPolicyImpl(request);
                 }
             });
     }

@@ -214,7 +214,12 @@ public enum SpecialParamEnum {
     /**
      * Set or obtain the WORM protection policy of an object.
      */
-    RETENTION("retention");
+    RETENTION("retention"),
+
+    /**
+     * Set, obtain, or delete the online decompression policy of a bucket.
+     */
+    OBS_COMPRESS_POLICY("obscompresspolicy");
     
     /**
      * Specify the corresponding code in the database and the external code.
