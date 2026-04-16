@@ -25,6 +25,12 @@
    - 测试创建后必须运行测试验证
    - 不得跳过依赖检查、编译、测试、构建、静态检查任一步骤
 
+5. **禁止修改源码后直接运行 failsafe:integration-test**
+   - 修改 `src/main/java` 下的源码后，`mvn failsafe:integration-test` 可能使用 `target/classes` 中的旧编译产物
+   - 必须先执行 `mvn clean test-compile` 清除旧产物并重新编译
+   - 再执行 `mvn failsafe:integration-test` 确保运行的是最新代码
+   - 命令组合：`mvn clean test-compile failsafe:integration-test -Dit.test=XXX -Dtest.env=prod`
+
 ## 正向示例
 
 ```bash
@@ -32,6 +38,9 @@
 mvn clean test -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
 mvn test -Dtest=ClassName -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
 mvn clean verify -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+
+# 正确的集成测试命令（修改源码后先 clean 再跑 IT）
+mvn clean test-compile failsafe:integration-test -Dit.test=BucketCompressPolicyIT -Dtest.env=prod -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 ## 反向示例
@@ -41,6 +50,11 @@ mvn clean verify -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_jav
 mvn clean test  # 缺少settings参数
 mvn test -Dtest=ClassName  # 缺少settings参数
 mvn clean verify  # 缺少settings参数
+
+# 错误：修改源码后直接跑 IT（使用旧 class 文件）
+# 编辑 ObsBucketAdvanceService.java 后直接执行：
+mvn failsafe:integration-test -Dit.test=XXXIT -Dtest.env=prod  # 可能运行的是修改前的代码
+# 应该先 mvn clean test-compile 再 failsafe:integration-test
 ```
 
 ## 验证清单

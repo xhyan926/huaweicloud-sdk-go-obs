@@ -29,6 +29,22 @@
    - 对象锁配置中，当设置 `Years` 时服务端返回 `Days=0` 而非 `Days=null`，断言必须匹配实际行为
    - 新增集成测试的断言必须基于对服务端实际响应的验证，不得基于协议文档的假设
 
+6. **禁止假设错误响应格式与 API 格式一致**
+   - JSON 格式的 API（如在线解压策略）其错误响应可能仍为 XML 格式，不得假设错误响应也是 JSON
+   - 服务端会将下游服务（OEF/IAM）的错误包装在 XML `<Error>` 信封中返回，`<Code>` 可能为空，实际错误详情在 `<Message>` 中
+   - 错误场景测试断言应优先验证 `getXmlMessage()`（原始响应体）和 `getErrorRequestId()` 不为空，而非强依赖 `getErrorCode()`/`getErrorMessage()`
+   - 如需验证具体错误码/错误信息，应先通过诊断输出确认服务端实际返回格式后再编写断言
+
+7. **禁止遗漏测试配置项的双路径同步**
+   - 新增测试所需的配置项（如 `projectId`、`agency`）必须同时添加到 `app/src/test/resource/test_data_prod.properties` 和 `src/it/resources/test_data_prod.properties`
+   - 不得只修改其中一个配置文件，否则会出现单元测试通过但集成测试因缺少配置而报错
+   - 配置值必须使用实际可用的值，不得使用占位符（如 `your-project-id`），否则运行时会触发服务端 400 错误
+
+8. **禁止对 SET 操作的 HTTP 状态码做单一值断言**
+   - PUT/POST 操作的状态码可能因是否为首次创建而不同：首次创建返回 `201`，更新已有配置返回 `200`
+   - 必须使用 `assertTrue(statusCode == 200 || statusCode == 201)` 兼容两种情况
+   - 不得使用 `assertEquals(200, statusCode)` 硬编码单一期望值
+
 ## 正向示例
 
 ```java
@@ -66,6 +82,23 @@ public void tearDown() {
 // 正确的断言：基于服务端实际返回值
 assertEquals(Integer.valueOf(0),
     result.getObjectLockConfiguration().getRule().getDefaultRetention().getDays());
+
+// 正确的错误场景断言：验证原始响应体和 RequestId，不强依赖 errorCode
+catch (ObsException e) {
+    assertEquals(400, e.getResponseCode());
+    assertNotNull("Error body should not be null", e.getXmlMessage());
+    assertFalse("Error body should not be empty", e.getXmlMessage().trim().isEmpty());
+    assertNotNull("ErrorRequestId should not be null", e.getErrorRequestId());
+}
+
+// 正确的 SET 操作状态码断言
+assertTrue("Expected 200 or 201, got: " + response.getStatusCode(),
+    response.getStatusCode() == 200 || response.getStatusCode() == 201);
+
+// 正确的配置文件同步（两个文件必须同时添加相同配置项）
+// app/src/test/resource/test_data_prod.properties
+// src/it/resources/test_data_prod.properties
+// 两个文件中都要有: projectId=xxx, agency=xxx
 ```
 
 ## 反向示例
@@ -97,6 +130,18 @@ String bucketName = description.getMethodName()
 
 // 错误：断言基于假设而非实际返回值
 assertNull(result.getDays()); // 服务端实际返回 Days=0，断言失败
+
+// 错误：假设 JSON API 的错误响应也是 JSON 格式
+catch (ObsException e) {
+    assertNotNull(e.getErrorCode()); // 实际是 XML 错误，<Code> 为空 → null 或空串，断言失败
+}
+
+// 错误：SET 操作硬编码 200
+assertEquals(200, setResponse.getStatusCode()); // 首次创建返回 201，断言失败
+
+// 错误：只修改了一个配置文件
+// app/src/test/resource/test_data_prod.properties 中添加了 agency=mirror_obs
+// src/it/resources/test_data_prod.properties 中没有添加 → 集成测试读不到配置
 ```
 
 ## 集成测试调试清单
@@ -107,3 +152,10 @@ assertNull(result.getDays()); // 服务端实际返回 Days=0，断言失败
 - [ ] 确认参数化测试的桶名转换逻辑与 `PrepareTestBucket` 一致
 - [ ] 确认资源生命周期由 `@Rule` 统一管理，无重复创建/删除
 - [ ] 打印 `ObsException` 的 `getErrorCode()` + `getErrorMessage()` + `getXmlMessage()` 获取服务端详细错误
+
+集成测试出现 `400` 或错误格式异常时，按以下顺序排查：
+- [ ] 确认测试所需的配置项（projectId、agency 等）已同步到 `app/src/test/resource/` 和 `src/it/resources/` 两个目录
+- [ ] 确认配置值是实际可用的（非占位符如 `your-project-id`）
+- [ ] 打印 `ObsException` 完整信息：`getXmlMessage()`（原始响应体）、`getResponseHeaders()`、`getResponseCode()` 确认实际错误格式
+- [ ] 如 `getErrorCode()` 返回空，说明错误体是 XML 格式且 `<Code>` 为空，实际错误在 `<Message>` 中
+- [ ] 确认委托名（agency）具有正确的云服务委托权限
