@@ -112,6 +112,11 @@ import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyResult;
 import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
+import com.obs.services.model.dis.DeleteBucketDisPolicyRequest;
+import com.obs.services.model.dis.DisPolicyConfiguration;
+import com.obs.services.model.dis.GetBucketDisPolicyRequest;
+import com.obs.services.model.dis.GetBucketDisPolicyResult;
+import com.obs.services.model.dis.SetBucketDisPolicyRequest;
 import com.obs.services.model.mirrorback.DeleteBucketMirrorBackToSourceRequest;
 import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceRequest;
 import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceResult;
@@ -1131,6 +1136,54 @@ public abstract class ObsBucketAdvanceService extends ObsBucketBaseService {
     protected HeaderResponse deleteBucketCompressPolicyImpl(DeleteBucketCompressPolicyRequest request) {
         Map<String, String> requestParams = new HashMap<>();
         requestParams.put(SpecialParamEnum.OBS_COMPRESS_POLICY.getOriginalStringCode(), "");
+        Response response = performRestDelete(request.getBucketName(), null, requestParams,
+            transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
+            request.getUserHeaders());
+        return this.build(response);
+    }
+
+    protected HeaderResponse setBucketDisPolicyImpl(SetBucketDisPolicyRequest request) {
+        Map<String, String> requestParams = new HashMap<>();
+        requestParams.put(SpecialParamEnum.DIS_POLICY.getOriginalStringCode(), "");
+        Map<String, String> headers = new HashMap<>();
+        transRequestPaymentHeaders(request, headers, this.getIHeaders(request.getBucketName()));
+        String jsonBody = JSONChange.objToJson(request.getDisPolicyConfiguration());
+        if (log.isTraceEnabled()) {
+            log.trace("setBucketDisPolicy's json is:");
+            log.trace(jsonBody);
+        }
+        headers.put(CommonHeaders.CONTENT_TYPE, Mimetypes.MIMETYPE_JSON);
+        NewTransResult transResult = transRequest(request);
+        transResult.setHeaders(headers);
+        transResult.setParams(requestParams);
+        transResult.setBody(createRequestBody(Mimetypes.MIMETYPE_JSON, jsonBody));
+        Response response = performRequest(transResult, true, false, false, false);
+        return build(response);
+    }
+
+    protected GetBucketDisPolicyResult getBucketDisPolicyImpl(GetBucketDisPolicyRequest request) {
+        Map<String, String> requestParameters = new HashMap<>();
+        requestParameters.put(SpecialParamEnum.DIS_POLICY.getOriginalStringCode(), "");
+
+        Response httpResponse = performRestGet(request.getBucketName(), null, requestParameters,
+            transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
+            request.getUserHeaders());
+
+        this.verifyResponseContentTypeForJson(httpResponse);
+
+        String body = RestUtils.readBodyFromResponse(httpResponse);
+        DisPolicyConfiguration config = (DisPolicyConfiguration) JSONChange
+            .jsonToObj(new DisPolicyConfiguration(), body);
+
+        GetBucketDisPolicyResult result = new GetBucketDisPolicyResult();
+        result.setDisPolicyConfiguration(config);
+        setHeadersAndStatus(result, httpResponse);
+        return result;
+    }
+
+    protected HeaderResponse deleteBucketDisPolicyImpl(DeleteBucketDisPolicyRequest request) {
+        Map<String, String> requestParams = new HashMap<>();
+        requestParams.put(SpecialParamEnum.DIS_POLICY.getOriginalStringCode(), "");
         Response response = performRestDelete(request.getBucketName(), null, requestParams,
             transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
             request.getUserHeaders());

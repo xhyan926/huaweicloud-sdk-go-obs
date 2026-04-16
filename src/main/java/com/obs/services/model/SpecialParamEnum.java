@@ -224,7 +224,12 @@ public enum SpecialParamEnum {
     /**
      * Set, obtain, or delete the mirror back to source policy of a bucket.
      */
-    MIRROR_BACK_TO_SOURCE("mirrorBackToSource");
+    MIRROR_BACK_TO_SOURCE("mirrorBackToSource"),
+
+    /**
+     * Set, obtain, or delete the DIS notification policy of a bucket.
+     */
+    DIS_POLICY("disPolicy");
     
     /**
      * Specify the corresponding code in the database and the external code.

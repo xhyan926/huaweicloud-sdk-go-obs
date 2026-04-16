@@ -170,6 +170,10 @@ import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyResult;
 import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
+import com.obs.services.model.dis.DeleteBucketDisPolicyRequest;
+import com.obs.services.model.dis.GetBucketDisPolicyRequest;
+import com.obs.services.model.dis.GetBucketDisPolicyResult;
+import com.obs.services.model.dis.SetBucketDisPolicyRequest;
 import com.obs.services.model.mirrorback.DeleteBucketMirrorBackToSourceRequest;
 import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceRequest;
 import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceResult;
@@ -2409,6 +2413,42 @@ public interface IObsClient extends IObsBucketExtendClient {
      *             fails to be called or access to OBS fails
      */
     HeaderResponse deleteBucketCompressPolicy(DeleteBucketCompressPolicyRequest request) throws ObsException;
+
+    /**
+     * Set the DIS notification policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for setting DIS notification policy
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    HeaderResponse setBucketDisPolicy(SetBucketDisPolicyRequest request) throws ObsException;
+
+    /**
+     * Get the DIS notification policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for getting DIS notification policy
+     * @return The DIS notification policy configuration
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    GetBucketDisPolicyResult getBucketDisPolicy(GetBucketDisPolicyRequest request) throws ObsException;
+
+    /**
+     * Delete the DIS notification policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for deleting DIS notification policy
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    HeaderResponse deleteBucketDisPolicy(DeleteBucketDisPolicyRequest request) throws ObsException;
 
     /**
      * Set the mirror back to source policy of a bucket.
