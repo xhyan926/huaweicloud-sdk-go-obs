@@ -170,6 +170,10 @@ import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyResult;
 import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
+import com.obs.services.model.mirrorback.DeleteBucketMirrorBackToSourceRequest;
+import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceRequest;
+import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceResult;
+import com.obs.services.model.mirrorback.SetBucketMirrorBackToSourceRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
 import com.obs.services.model.objectlock.SetObjectLockConfigurationRequest;
@@ -2405,6 +2409,43 @@ public interface IObsClient extends IObsBucketExtendClient {
      *             fails to be called or access to OBS fails
      */
     HeaderResponse deleteBucketCompressPolicy(DeleteBucketCompressPolicyRequest request) throws ObsException;
+
+    /**
+     * Set the mirror back to source policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for setting mirror back to source policy
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    HeaderResponse setBucketMirrorBackToSource(SetBucketMirrorBackToSourceRequest request) throws ObsException;
+
+    /**
+     * Get the mirror back to source policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for getting mirror back to source policy
+     * @return The mirror back to source configuration
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    GetBucketMirrorBackToSourceResult getBucketMirrorBackToSource(GetBucketMirrorBackToSourceRequest request)
+            throws ObsException;
+
+    /**
+     * Delete the mirror back to source policy of a bucket.
+     *
+     * @param request
+     *            Request parameters for deleting mirror back to source policy
+     * @return Common response headers
+     * @throws ObsException
+     *             OBS SDK self-defined exception, thrown when the interface
+     *             fails to be called or access to OBS fails
+     */
+    HeaderResponse deleteBucketMirrorBackToSource(DeleteBucketMirrorBackToSourceRequest request) throws ObsException;
 
     HeaderResponse setObjectLockConfiguration(SetObjectLockConfigurationRequest request) throws ObsException;
 

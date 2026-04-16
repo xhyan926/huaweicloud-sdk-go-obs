@@ -112,6 +112,11 @@ import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyResult;
 import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
+import com.obs.services.model.mirrorback.DeleteBucketMirrorBackToSourceRequest;
+import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceRequest;
+import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceResult;
+import com.obs.services.model.mirrorback.MirrorBackToSourceConfiguration;
+import com.obs.services.model.mirrorback.SetBucketMirrorBackToSourceRequest;
 import com.obs.services.model.objectlock.DefaultRetention;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
@@ -1126,6 +1131,55 @@ public abstract class ObsBucketAdvanceService extends ObsBucketBaseService {
     protected HeaderResponse deleteBucketCompressPolicyImpl(DeleteBucketCompressPolicyRequest request) {
         Map<String, String> requestParams = new HashMap<>();
         requestParams.put(SpecialParamEnum.OBS_COMPRESS_POLICY.getOriginalStringCode(), "");
+        Response response = performRestDelete(request.getBucketName(), null, requestParams,
+            transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
+            request.getUserHeaders());
+        return this.build(response);
+    }
+
+    protected HeaderResponse setBucketMirrorBackToSourceImpl(SetBucketMirrorBackToSourceRequest request) {
+        Map<String, String> requestParams = new HashMap<>();
+        requestParams.put(SpecialParamEnum.MIRROR_BACK_TO_SOURCE.getOriginalStringCode(), "");
+        Map<String, String> headers = new HashMap<>();
+        transRequestPaymentHeaders(request, headers, this.getIHeaders(request.getBucketName()));
+        String jsonBody = JSONChange.objToJson(request.getMirrorBackToSourceConfiguration());
+        if (log.isTraceEnabled()) {
+            log.trace("setBucketMirrorBackToSource's json is:");
+            log.trace(jsonBody);
+        }
+        headers.put(CommonHeaders.CONTENT_TYPE, Mimetypes.MIMETYPE_JSON);
+        NewTransResult transResult = transRequest(request);
+        transResult.setHeaders(headers);
+        transResult.setParams(requestParams);
+        transResult.setBody(createRequestBody(Mimetypes.MIMETYPE_JSON, jsonBody));
+        Response response = performRequest(transResult, true, false, false, false);
+        return build(response);
+    }
+
+    protected GetBucketMirrorBackToSourceResult getBucketMirrorBackToSourceImpl(
+            GetBucketMirrorBackToSourceRequest request) {
+        Map<String, String> requestParameters = new HashMap<>();
+        requestParameters.put(SpecialParamEnum.MIRROR_BACK_TO_SOURCE.getOriginalStringCode(), "");
+
+        Response httpResponse = performRestGet(request.getBucketName(), null, requestParameters,
+            transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
+            request.getUserHeaders());
+
+        this.verifyResponseContentTypeForJson(httpResponse);
+
+        String body = RestUtils.readBodyFromResponse(httpResponse);
+        MirrorBackToSourceConfiguration config = (MirrorBackToSourceConfiguration) JSONChange
+            .jsonToObj(new MirrorBackToSourceConfiguration(), body);
+
+        GetBucketMirrorBackToSourceResult result = new GetBucketMirrorBackToSourceResult();
+        result.setMirrorBackToSourceConfiguration(config);
+        setHeadersAndStatus(result, httpResponse);
+        return result;
+    }
+
+    protected HeaderResponse deleteBucketMirrorBackToSourceImpl(DeleteBucketMirrorBackToSourceRequest request) {
+        Map<String, String> requestParams = new HashMap<>();
+        requestParams.put(SpecialParamEnum.MIRROR_BACK_TO_SOURCE.getOriginalStringCode(), "");
         Response response = performRestDelete(request.getBucketName(), null, requestParams,
             transRequestPaymentHeaders(request, null, this.getIHeaders(request.getBucketName())),
             request.getUserHeaders());

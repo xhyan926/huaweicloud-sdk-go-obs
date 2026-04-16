@@ -60,6 +60,10 @@ import com.obs.services.model.compress.SetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyRequest;
 import com.obs.services.model.compress.GetBucketCompressPolicyResult;
 import com.obs.services.model.compress.DeleteBucketCompressPolicyRequest;
+import com.obs.services.model.mirrorback.DeleteBucketMirrorBackToSourceRequest;
+import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceRequest;
+import com.obs.services.model.mirrorback.GetBucketMirrorBackToSourceResult;
+import com.obs.services.model.mirrorback.SetBucketMirrorBackToSourceRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationRequest;
 import com.obs.services.model.objectlock.GetObjectLockConfigurationResult;
 import com.obs.services.model.objectlock.SetObjectLockConfigurationRequest;
@@ -633,10 +637,12 @@ public abstract class AbstractBucketAdvanceClient extends AbstractBucketClient {
         ServiceUtils.assertParameterNotNull2(request.getRuleId(), "ruleId is null");
         return this.doActionWithResult("getCrrProgress", request.getBucketName(),
                 new ActionCallbackWithResult<GetCrrProgressResult>() {
-            @Override
-            public GetCrrProgressResult action() throws ServiceException {
-                return AbstractBucketAdvanceClient.this.getCrrProgressImpl(request);
-            }
+                    @Override
+                    public GetCrrProgressResult action() throws ServiceException {
+                        return AbstractBucketAdvanceClient.this.getCrrProgressImpl(request);
+                    }
+
+                    @Override
                     void authTypeNegotiate(String bucketName) throws ServiceException {
                         AuthTypeEnum authTypeEnum = AbstractBucketAdvanceClient.this.getProviderCredentials().getLocalAuthType().get(bucketName);
                         if (authTypeEnum == null) {
@@ -645,7 +651,7 @@ public abstract class AbstractBucketAdvanceClient extends AbstractBucketClient {
                         }
 
                     }
-        });
+                });
     }
 
     /*
@@ -915,6 +921,48 @@ public abstract class AbstractBucketAdvanceClient extends AbstractBucketClient {
                 @Override
                 public HeaderResponse action() throws ServiceException {
                     return AbstractBucketAdvanceClient.this.deleteBucketCompressPolicyImpl(request);
+                }
+            });
+    }
+
+    @Override
+    public HeaderResponse setBucketMirrorBackToSource(final SetBucketMirrorBackToSourceRequest request)
+            throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "SetBucketMirrorBackToSourceRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("setBucketMirrorBackToSource", request.getBucketName(),
+            new ActionCallbackWithResult<HeaderResponse>() {
+                @Override
+                public HeaderResponse action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.setBucketMirrorBackToSourceImpl(request);
+                }
+            });
+    }
+
+    @Override
+    public GetBucketMirrorBackToSourceResult getBucketMirrorBackToSource(
+            final GetBucketMirrorBackToSourceRequest request) throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "GetBucketMirrorBackToSourceRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("getBucketMirrorBackToSource", request.getBucketName(),
+            new ActionCallbackWithResult<GetBucketMirrorBackToSourceResult>() {
+                @Override
+                public GetBucketMirrorBackToSourceResult action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.getBucketMirrorBackToSourceImpl(request);
+                }
+            });
+    }
+
+    @Override
+    public HeaderResponse deleteBucketMirrorBackToSource(
+            final DeleteBucketMirrorBackToSourceRequest request) throws ObsException {
+        ServiceUtils.assertParameterNotNull(request, "DeleteBucketMirrorBackToSourceRequest is null");
+        ServiceUtils.assertParameterNotNull(request.getBucketName(), "bucketName is null");
+        return this.doActionWithResult("deleteBucketMirrorBackToSource", request.getBucketName(),
+            new ActionCallbackWithResult<HeaderResponse>() {
+                @Override
+                public HeaderResponse action() throws ServiceException {
+                    return AbstractBucketAdvanceClient.this.deleteBucketMirrorBackToSourceImpl(request);
                 }
             });
     }

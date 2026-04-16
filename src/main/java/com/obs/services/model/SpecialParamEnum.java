@@ -219,7 +219,12 @@ public enum SpecialParamEnum {
     /**
      * Set, obtain, or delete the online decompression policy of a bucket.
      */
-    OBS_COMPRESS_POLICY("obscompresspolicy");
+    OBS_COMPRESS_POLICY("obscompresspolicy"),
+
+    /**
+     * Set, obtain, or delete the mirror back to source policy of a bucket.
+     */
+    MIRROR_BACK_TO_SOURCE("mirrorBackToSource");
     
     /**
      * Specify the corresponding code in the database and the external code.
