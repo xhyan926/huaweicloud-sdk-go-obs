@@ -2,8 +2,11 @@ package com.obs.services;
 
 import com.obs.log.ILogger;
 import com.obs.log.LoggerBuilder;
+import com.obs.services.internal.task.DownloadFileTask;
 import com.obs.services.internal.task.UploadFileTask;
 import com.obs.services.model.CompleteMultipartUploadResult;
+import com.obs.services.model.DownloadFileRequest;
+import com.obs.services.model.DownloadFileResult;
 import com.obs.services.model.TaskCallback;
 import com.obs.services.model.UploadFileRequest;
 
@@ -155,5 +158,26 @@ public class ObsClientAsync extends ObsClient implements IObsClientAsync {
 
         uploadFileTask.setResultFuture(future);
         return uploadFileTask;
+    }
+
+    /**
+     * @param downloadFileRequest
+     * @param completeCallback
+     * @return
+     */
+    @Override
+    public DownloadFileTask downloadFileAsync(
+            DownloadFileRequest downloadFileRequest,
+            TaskCallback<DownloadFileResult, DownloadFileRequest> completeCallback) {
+        log.debug("start downloadFileAsync");
+        if (downloadFileRequest.getCancelHandler() != null) {
+            downloadFileRequest.getCancelHandler().resetCancelStatus();
+        }
+        DownloadFileTask downloadFileTask =
+                new DownloadFileTask(this, downloadFileRequest.getBucketName(), downloadFileRequest, completeCallback);
+        Future<?> future = getExecutorService().submit((Callable<?>) downloadFileTask);
+
+        downloadFileTask.setResultFuture(future);
+        return downloadFileTask;
     }
 }

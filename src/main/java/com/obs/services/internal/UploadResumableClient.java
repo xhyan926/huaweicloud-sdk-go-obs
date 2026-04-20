@@ -32,6 +32,7 @@ import com.obs.services.model.PartEtag;
 import com.obs.services.model.UploadFileRequest;
 import com.obs.services.model.UploadPartRequest;
 import com.obs.services.model.UploadPartResult;
+import com.obs.services.model.ResumableTransferHandle;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,6 +82,12 @@ public class UploadResumableClient {
                     "callbackUrl is null");
             ServiceUtils.assertParameterNotNull(uploadFileRequest.getCallback().getCallbackBody(),
                     "callbackBody is null");
+        }
+
+        ResumableTransferHandle transferHandle = uploadFileRequest.getTransferHandle();
+        if (transferHandle != null) {
+            transferHandle.bind(uploadFileRequest.getCancelHandler());
+            uploadFileRequest.setCancelHandler(transferHandle.getCancelHandler());
         }
 
         try {
@@ -171,6 +178,14 @@ public class UploadResumableClient {
             abortUploadFileTaskIfCanceledAndAborted(uploadCheckPoint, uploadFileRequest);
             throw new ObsException("uploadFileRequest is canceled, no completeMultipartUploadRequest is sent");
         }
+
+        if (isTransferPaused(uploadFileRequest)) {
+            if (uploadFileRequest.isEnableCheckpoint()) {
+                uploadCheckPoint.record(uploadFileRequest.getCheckpointFile());
+            }
+            log.info("uploadFileRequest is paused, checkpoint saved");
+            throw new ObsException("uploadFileRequest is paused, can be resumed later");
+        }
         // 合并多段
         CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest(
                 uploadFileRequest.getBucketName(), uploadFileRequest.getObjectKey(), uploadCheckPoint.uploadID,
@@ -254,6 +269,8 @@ public class UploadResumableClient {
                     PartResult pr = new PartResult(uploadPart.partNumber, uploadPart.offset, uploadPart.size);
                     pr.setFailed(false);
                     pieceResults.add(pr);
+                } else if (isTransferPaused(uploadFileRequest)) {
+                    break;
                 } else {
                     futures.add(executorService
                             .submit(new Mission(i, uploadCheckPoint, i, uploadFileRequest, this.obsClient)));
@@ -278,6 +295,9 @@ public class UploadResumableClient {
                     uploadFileRequest.getProgressListener(), uploadFileRequest.getProgressInterval() > 0
                             ? uploadFileRequest.getProgressInterval() : ObsConstraint.DEFAULT_PROGRESS_INTERVAL);
             for (Mission mission : unfinishedUploadMissions) {
+                if (isTransferPaused(uploadFileRequest)) {
+                    break;
+                }
                 mission.setProgressManager(progressManager);
                 futures.add(executorService.submit(mission));
             }
@@ -338,6 +358,12 @@ public class UploadResumableClient {
                 ObsException e = new ObsException(errorInfo);
                 tr.setException(e);
                 tr.setFailed(true);
+                return tr;
+            }
+
+            if (isTransferPaused(uploadFileRequest)) {
+                log.info(String.format(Locale.ROOT,
+                        "Task %d:%s upload part %d paused, skipping.", id, "upload" + id, partIndex + 1));
                 return tr;
             }
             if (!uploadCheckPoint.isAbort) {
@@ -544,6 +570,10 @@ public class UploadResumableClient {
     /**
      * 断点续传上传所需类
      */
+    private static boolean isTransferPaused(UploadFileRequest request) {
+        return request.getTransferHandle() != null && request.getTransferHandle().isPaused();
+    }
+
     static class UploadCheckPoint implements Serializable {
 
         private static final long serialVersionUID = 5564757792864743464L;
