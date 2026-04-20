@@ -29,105 +29,29 @@ mvn verify
 
 ## 渐进式披露文档导航
 
-### 📋 规则文件 (.claude/rules/)
+### 规则文件 (.claude/rules/)
 
 根据当前任务类型，加载相应的规则文件：
 
-#### 1. 开发工作流规则
-**加载场景**: 当进行代码的开发活动时加载
-**文件**: `.claude/rules/core-development-principles.md`
-**主要内容**:
-- 核心的开发原则
+| 规则 | 文件 | 加载场景 |
+|------|------|----------|
+| 核心开发原则 | `core-development-principles.md` | 代码开发活动 |
+| 开发工作流 | `development-workflow.md` | 开发、构建、测试、提交 |
+| 代码质量 | `code-quality.md` | 编写、修改、审查代码 |
+| AI代码生成 | `ai-code-generation.md` | AI助手生成代码 |
+| 集成测试 | `integration-test.md` | 编写/调试集成测试或新增 SpecialParamEnum |
 
-#### 2. 开发工作流规则
-**加载场景**: 当进行代码开发、构建、测试、提交等开发活动时
-**文件**: `.claude/rules/development-workflow.md`
-**主要内容**:
-- Maven命令规范（必须包含settings参数）
-- 静态检查要求
-- 开发红线
-- 验证清单
-
-#### 3. 代码质量规则
-**加载场景**: 当编写、修改、审查代码时
-**文件**: `.claude/rules/code-quality.md`
-**主要内容**:
-- SOLID原则要求
-- 代码风格规范
-- 测试质量要求
-- 质量检查清单
-
-#### 4. AI代码生成规则
-**加载场景**: 当使用AI助手生成代码时
-**文件**: `.claude/rules/ai-code-generation.md`
-**主要内容**:
-- @AIGenerated注解规范
-- 动态日期和git用户信息获取
-- 参数化测试要求
-- 强制验证清单
-
-#### 5. 集成测试规则
-**加载场景**: 当编写、修改、调试集成测试（`*IT.java`）或新增 `SpecialParamEnum` 子资源参数时
-**文件**: `.claude/rules/integration-test.md`
-**主要内容**:
-- 签名白名单注册要求
-- 多环境配置一致性
-- 测试资源生命周期管理
-- 桶名转换一致性
-- 断言与服务端行为对齐
-- 集成测试调试清单
-
-### 📚 技术文档 (.claude/docs/)
+### 技术文档 (.claude/docs/)
 
 根据需要了解的深度，加载相应的技术文档：
 
-#### 1. 架构文档
-**加载场景**: 当需要了解项目整体架构、设计模式、核心组件时
-**文件**: `.claude/docs/architecture.md`
-**主要内容**:
-- 分层架构设计
-- 核心组件说明
-- 包结构组织
-- 设计模式应用
-- 关键特性介绍
-
-#### 2. 构建指南
-**加载场景**: 当需要构建项目、运行测试、生成文档时
-**文件**: `.claude/docs/build-guide.md`
-**主要内容**:
-- 环境要求
-- 构建命令详解
-- Profile配置
-- 构建产物说明
-- 常见问题解决
-
-#### 3. Maven插件详解
-**加载场景**: 当需要了解Maven插件配置、自定义构建流程时
-**文件**: `.claude/docs/maven-plugins.md`
-**主要内容**:
-- 核心插件配置
-- 插件执行顺序
-- 依赖关系图
-- 最佳实践
-
-#### 4. 依赖管理
-**加载场景**: 当遇到依赖问题、需要添加新依赖时
-**文件**: `.claude/docs/dependency-management.md`
-**主要内容**:
-- 依赖健康度评估
-- 版本冲突分析
-- 优化建议
-- 常用依赖管理命令
-
-#### 5. 开发规范
-**加载场景**: 当需要了解团队开发规范、代码审查标准时
-**文件**: `.claude/docs/development-standards.md`
-**主要内容**:
-- 开发红线
-- 分支命名规范
-- 代码检视规范
-- 提交信息规范
-- 外部资源链接
+| 文档 | 文件 | 加载场景 |
+|------|------|----------|
+| 架构文档 | `architecture.md` | 了解整体架构、设计模式、核心组件 |
+| 构建指南 | `build-guide.md` | 构建项目、运行测试、生成文档 |
+| Maven插件 | `maven-plugins.md` | Maven插件配置、自定义构建流程 |
+| 依赖管理 | `dependency-management.md` | 依赖问题、添加新依赖 |
+| 开发规范 | `development-standards.md` | 团队规范、代码审查标准 |
 
 ## 项目结构
 
@@ -169,62 +93,22 @@ obs-sdk-java/
 
 ## 重要约束
 
-### Maven命令约束
-所有Maven命令必须包含settings参数：
-```bash
-mvn [command] -s ./esdk_obs_java_android_en/CI/settings.xml -T 1C
-```
+> 详细约束见 `.claude/rules/` 下对应规则文件，以下为核心约束摘要：
 
-### 测试约束
-- 新增代码分支覆盖率必须达到100%
-- 测试方法命名必须遵循 `should_[ExpectedBehavior]_when_[Condition]` 格式
-- 必须使用参数化测试避免重复代码
-
-### 代码质量约束
-- 必须符合SOLID原则
-- 不得使用原始类型，必须使用Java泛型
-- 公共方法必须有JavaDoc注释
-
-### AI生成代码约束
-- 必须添加 `@AIGenerated` 注解
-- 必须使用动态日期和git用户信息
-- 必须通过编译和测试验证
+- Maven命令必须包含 `-s` settings参数
+- 测试覆盖率100%，命名 `should_X_when_Y`，使用参数化测试
+- 符合SOLID原则，使用Java泛型，公共方法有JavaDoc
+- AI生成代码须加 `@AIGenerated` 注解，动态日期和git用户信息
 
 ## 常见任务场景
 
-### 场景1: 添加新功能
-1. 加载 `.claude/rules/development-workflow.md` - 了解开发流程
-2. 加载 `.claude/rules/code-quality.md` - 了解代码质量要求
-3. 加载 `.claude/docs/architecture.md` - 了解架构设计
-4. 按照SOLID原则设计接口和实现
-5. 编写单元测试（覆盖率100%）
-6. 执行验证清单
-
-### 场景2: 修复缺陷
-1. 加载 `.claude/rules/development-workflow.md` - 了解开发流程
-2. 加载 `.claude/docs/build-guide.md` - 了解构建和测试
-3. 定位问题根因
-4. 编写修复代码
-5. 编写或更新测试
-6. 执行验证清单
-
-### 场景3: 使用AI生成代码
-1. 加载 `.claude/rules/ai-code-generation.md` - 了解AI生成规范
-2. 加载 `.claude/rules/code-quality.md` - 了解代码质量要求
-3. 生成代码并添加@AIGenerated注解
-4. 执行强制验证清单
-
-### 场景4: 解决依赖问题
-1. 加载 `.claude/docs/dependency-management.md` - 了解依赖管理
-2. 运行 `mvn dependency:tree` 查看依赖树
-3. 分析冲突原因
-4. 按照优化建议解决
-
-### 场景5: 代码审查
-1. 加载 `.claude/rules/code-quality.md` - 了解代码质量要求
-2. 加载 `.claude/docs/development-standards.md` - 了解审查标准
-3. 按照Review CheckList进行检查
-4. 提供改进建议
+| 场景 | 需加载的规则/文档 | 关键步骤 |
+|------|-------------------|----------|
+| 添加新功能 | `development-workflow` + `code-quality` + `architecture` | SOLID设计 → 单元测试(100%覆盖) → 验证清单 |
+| 修复缺陷 | `development-workflow` + `build-guide` | 定位根因 → 修复代码 → 更新测试 → 验证清单 |
+| AI生成代码 | `ai-code-generation` + `code-quality` | @AIGenerated注解 → 强制验证清单 |
+| 解决依赖问题 | `dependency-management` | `mvn dependency:tree` → 分析冲突 → 解决 |
+| 代码审查 | `code-quality` + `development-standards` | Review CheckList → 改进建议 |
 
 ## 外部资源
 
