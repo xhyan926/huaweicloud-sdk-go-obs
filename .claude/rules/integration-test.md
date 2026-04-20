@@ -6,6 +6,7 @@
 
 1. **禁止遗漏签名白名单注册**
    - 新增 `SpecialParamEnum` 枚举值后，必须同步将其 `stringCode` 添加到 `Constants.ALLOWED_RESOURCE_PARAMTER_NAMES` 列表中
+   - 注意：常量名中的 `PARAMTER` 是代码中的实际拼写（历史原因），非笔误，不得修正为 `PARAMETER`
    - 不得只添加枚举值而忽略签名白名单，否则 V1 签名计算不会包含该子资源参数，导致服务端返回 `403 SignatureDoesNotMatch`
    - 使用 `getStringCode()` 返回值作为白名单项，确保与签名计算逻辑一致
 

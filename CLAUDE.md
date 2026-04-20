@@ -95,7 +95,7 @@ obs-sdk-java/
 
 > 详细约束见 `.claude/rules/` 下对应规则文件，以下为核心约束摘要：
 
-- Maven命令必须包含 `-s` settings参数
+- Maven命令必须包含 `-s /usr/local/Maven/conf/settings.xml` settings参数
 - 测试覆盖率100%，命名 `should_X_when_Y`，使用参数化测试
 - 符合SOLID原则，使用Java泛型，公共方法有JavaDoc
 - AI生成代码须加 `@AIGenerated` 注解，动态日期和git用户信息

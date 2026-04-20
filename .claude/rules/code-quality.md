@@ -29,7 +29,7 @@
    - 不得假设 `getResponseHeaders().get("Content-Type")` 一定返回有效值
 
 5. **禁止不完整的测试**
-   - 新增代码分支覆盖率必须达到100%
+   - 新增代码可达分支覆盖率必须达到100%（不含经分析确认的不可达防御性分支）
    - 不得编写重复的独立测试方法，必须使用参数化测试
    - 测试方法命名必须遵循 `should_[ExpectedBehavior]_when_[Condition]` 格式
 
@@ -81,7 +81,7 @@ public ServiceException(String message, String xmlMessage) {
 String contentType = response.header(CommonHeaders.CONTENT_TYPE);
 return new ServiceException(message, xmlMessage, contentType);
 
-// 正确的单变量状态机（规则 6/7）
+// 正确的单变量状态机（规则 6/7，示例代码非项目实际类）
 public class ResumableTransferHandle {
     private enum State { ACTIVE, PAUSED, CANCELLED }
     private final AtomicReference<State> state = new AtomicReference<>(State.ACTIVE);
@@ -169,7 +169,7 @@ public class ResumableTransferController { ... }  // 误导使用者以为是 Sp
 - [ ] 使用Java泛型，无原始类型
 - [ ] 公共方法有JavaDoc注释
 - [ ] 异常处理合理
-- [ ] 测试覆盖率达到100%
+- [ ] 测试覆盖率（可达分支）达到100%
 - [ ] 测试使用参数化方式
 - [ ] 互斥状态使用单变量状态机管理
 - [ ] 状态转换方法有前置条件校验

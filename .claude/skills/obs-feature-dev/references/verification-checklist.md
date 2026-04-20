@@ -6,10 +6,10 @@
 
 ## Maven 命令规范
 
-**所有 Maven 命令必须包含 settings 参数和 pom 文件路径：**
+**所有 Maven 命令必须包含 settings 参数：**
 
 ```bash
-mvn [command] -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn [command] -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 **禁止**使用不带 settings 参数的简化命令。
@@ -21,7 +21,7 @@ mvn [command] -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_a
 ### 步骤 1: 编译验证
 
 ```bash
-mvn clean compile test-compile -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn clean compile test-compile -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 **检查点**：
@@ -33,10 +33,10 @@ mvn clean compile test-compile -s ./esdk_obs_java_android_en/CI/settings.xml -f 
 
 ```bash
 # 运行指定测试类
-mvn test -Dtest=<Feature>UnitTest -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn test -Dtest=<Feature>UnitTest -s /usr/local/Maven/conf/settings.xml -T 1C
 
 # 运行全部测试
-mvn test -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn test -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 **检查点**：
@@ -47,7 +47,7 @@ mvn test -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_androi
 ### 步骤 3: 静态分析
 
 ```bash
-mvn checkstyle:check spotbugs:check pmd:check -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn checkstyle:check spotbugs:check pmd:check -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 **检查点**：
@@ -58,7 +58,7 @@ mvn checkstyle:check spotbugs:check pmd:check -s ./esdk_obs_java_android_en/CI/s
 ### 步骤 4: 完整构建验证
 
 ```bash
-mvn clean verify -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn clean verify -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 **检查点**：

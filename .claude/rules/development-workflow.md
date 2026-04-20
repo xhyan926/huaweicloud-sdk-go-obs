@@ -5,7 +5,7 @@
 ## 禁止事项
 
 1. **禁止跳过Maven settings参数**
-   - 所有Maven命令必须包含 `-s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml` 参数
+   - 所有Maven命令必须包含 `-s /usr/local/Maven/conf/settings.xml` 参数
    - 不得使用简化的Maven命令
    - 不得省略settings.xml配置
 
@@ -35,9 +35,9 @@
 
 ```bash
 # 正确的Maven命令
-mvn clean test -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
-mvn test -Dtest=ClassName -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
-mvn clean verify -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn clean test -s /usr/local/Maven/conf/settings.xml -T 1C
+mvn test -Dtest=ClassName -s /usr/local/Maven/conf/settings.xml -T 1C
+mvn clean verify -s /usr/local/Maven/conf/settings.xml -T 1C
 
 # 正确的集成测试命令（修改源码后先 clean 再跑 IT）
 mvn clean test-compile failsafe:integration-test -Dit.test=BucketCompressPolicyIT -Dtest.env=prod -s /usr/local/Maven/conf/settings.xml -T 1C
@@ -59,9 +59,9 @@ mvn failsafe:integration-test -Dit.test=XXXIT -Dtest.env=prod  # 可能运行的
 
 ## 验证清单
 
-提交前必须按顺序执行：
-1. 依赖验证：`mvn dependency:analyze -s ./esdk_obs_java_android_en/CI/settings.xml -T 1C`
-2. 编译验证：`mvn clean compile test-compile -s ./esdk_obs_java_android_en/CI/settings.xml -T 1C`
-3. 测试验证：`mvn test -s ./esdk_obs_java_android_en/CI/settings.xml -T 1C`
-4. 构建验证：`mvn clean verify -s ./esdk_obs_java_android_en/CI/settings.xml -T 1C`
-5. 静态检查：`mvn checkstyle:check spotbugs:check pmd:check -s ./esdk_obs_java_android_en/CI/settings.xml -T 1C`
+提交前按需执行（日常开发至少完成 1-3 步，提交前完成全部）：
+1. 依赖验证：`mvn dependency:analyze -s /usr/local/Maven/conf/settings.xml -T 1C`
+2. 编译验证：`mvn clean compile test-compile -s /usr/local/Maven/conf/settings.xml -T 1C`
+3. 测试验证：`mvn test -s /usr/local/Maven/conf/settings.xml -T 1C`
+4. 构建验证：`mvn clean verify -s /usr/local/Maven/conf/settings.xml -T 1C`
+5. 静态检查：`mvn checkstyle:check spotbugs:check pmd:check -s /usr/local/Maven/conf/settings.xml -T 1C`

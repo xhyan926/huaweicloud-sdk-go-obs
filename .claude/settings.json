@@ -1,5 +1,16 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__web-reader__webReader",
+      "Bash(mvn clean:*)",
+      "Bash(mvn test:*)",
+      "Bash(mvn test-compile:*)",
+      "mcp__web-search-prime__web_search_prime",
+      "Bash(mvn compile:*)"
+    ]
+  },
   "enabledPlugins": {
-    "jdtls-lsp@claude-plugins-official": true
+    "jdtls-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true
   }
 }

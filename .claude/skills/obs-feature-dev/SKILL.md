@@ -376,7 +376,7 @@ public Get<Feature>Result get<Feature>(Get<Feature>Request request) throws ObsEx
 
 **单元测试验证命令**：
 ```bash
-mvn test -Dtest=<Feature>UnitTest -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn test -Dtest=<Feature>UnitTest -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 ### 7.2 集成测试
@@ -400,7 +400,7 @@ mvn test -Dtest=<Feature>UnitTest -s ./esdk_obs_java_android_en/CI/settings.xml 
 
 **集成测试验证命令**：
 ```bash
-mvn verify -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_android_en/source/pom-java.xml -T 1C
+mvn verify -s /usr/local/Maven/conf/settings.xml -T 1C
 ```
 
 ### 7.3 测试方法命名规范
@@ -413,9 +413,11 @@ mvn verify -s ./esdk_obs_java_android_en/CI/settings.xml -f ./esdk_obs_java_andr
 AI 生成的测试方法必须添加注解：
 
 ```java
+// author 应替换为 git config user.name 的实际输出
+// date 应替换为当前系统日期（如 2026-04-20）
 @com.obs.aitool.AIGenerated(
-    author = System.getProperty("user.name"),
-    date = java.time.LocalDate.now().toString(),
+    author = "实际的git用户名",
+    date = "实际的当前日期",
     description = "..."
 )
 ```
