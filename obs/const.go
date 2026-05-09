@@ -226,6 +226,12 @@ const (
 	MAX_PREFIX_LENGTH                  = 1023
 	MIN_SUFFIX_LENGTH                  = 4
 	MAX_RULES_COUNT                    = 10
+
+	TransferStatusRunning   TransferStatusType = "RUNNING"
+	TransferStatusPaused    TransferStatusType = "PAUSED"
+	TransferStatusCancelled TransferStatusType = "CANCELLED"
+	TransferStatusCompleted TransferStatusType = "COMPLETED"
+	TransferStatusFailed    TransferStatusType = "FAILED"
 )
 
 var (

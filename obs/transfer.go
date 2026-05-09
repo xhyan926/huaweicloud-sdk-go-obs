@@ -401,10 +401,20 @@ func handleUploadTaskResult(result interface{}, ufc *UploadCheckpoint, partNum i
 }
 
 func (obsClient ObsClient) uploadPartConcurrent(ufc *UploadCheckpoint, checkpointFilePath string, input *UploadFileInput, extensions []extensionOptions) error {
+	return obsClient.uploadPartConcurrentWithTask(ufc, checkpointFilePath, input, extensions, nil)
+}
+
+func (obsClient ObsClient) uploadPartConcurrentWithTask(ufc *UploadCheckpoint, checkpointFilePath string, input *UploadFileInput, extensions []extensionOptions, task *TransferTask) error {
 	pool := NewRoutinePool(input.TaskNum, MAX_PART_NUM)
 	var uploadPartError atomic.Value
 	var errFlag int32
 	var abort int32
+	var abortPtr *int32
+	if task != nil {
+		abortPtr = task.abortFlag()
+	} else {
+		abortPtr = &abort
+	}
 	lock := new(sync.Mutex)
 
 	var completedBytes int64
@@ -414,7 +424,12 @@ func (obsClient ObsClient) uploadPartConcurrent(ufc *UploadCheckpoint, checkpoin
 	publishProgress(listener, event)
 
 	for _, uploadPart := range ufc.UploadParts {
-		if atomic.LoadInt32(&abort) == 1 {
+		if task != nil {
+			if task.checkAndWaitPause() {
+				break
+			}
+		}
+		if atomic.LoadInt32(abortPtr) == 1 {
 			break
 		}
 		if uploadPart.IsCompleted {
@@ -423,7 +438,7 @@ func (obsClient ObsClient) uploadPartConcurrent(ufc *UploadCheckpoint, checkpoin
 			publishProgress(listener, event)
 			continue
 		}
-		task := uploadPartTask{
+		partTask := uploadPartTask{
 			UploadPartInput: UploadPartInput{
 				Bucket:     ufc.Bucket,
 				Key:        ufc.Key,
@@ -435,13 +450,13 @@ func (obsClient ObsClient) uploadPartConcurrent(ufc *UploadCheckpoint, checkpoin
 				PartSize:   uploadPart.PartSize,
 			},
 			obsClient:        &obsClient,
-			abort:            &abort,
+			abort:            abortPtr,
 			extensions:       extensions,
 			enableCheckpoint: input.EnableCheckpoint,
 		}
 		pool.ExecuteFunc(func() interface{} {
-			result := task.Run()
-			err := handleUploadTaskResult(result, ufc, task.PartNumber, input.EnableCheckpoint, input.CheckpointFile, lock, &completedBytes, listener)
+			result := partTask.Run()
+			err := handleUploadTaskResult(result, ufc, partTask.PartNumber, input.EnableCheckpoint, input.CheckpointFile, lock, &completedBytes, listener)
 			if err != nil && atomic.CompareAndSwapInt32(&errFlag, 0, 1) {
 				uploadPartError.Store(err)
 			}
@@ -865,10 +880,20 @@ func handleDownloadTaskResult(result interface{}, dfc *DownloadCheckpoint, partN
 }
 
 func (obsClient ObsClient) downloadFileConcurrent(input *DownloadFileInput, dfc *DownloadCheckpoint, extensions []extensionOptions) error {
+	return obsClient.downloadFileConcurrentWithTask(input, dfc, extensions, nil)
+}
+
+func (obsClient ObsClient) downloadFileConcurrentWithTask(input *DownloadFileInput, dfc *DownloadCheckpoint, extensions []extensionOptions, task *TransferTask) error {
 	pool := NewRoutinePool(input.TaskNum, MAX_PART_NUM)
 	var downloadPartError atomic.Value
 	var errFlag int32
 	var abort int32
+	var abortPtr *int32
+	if task != nil {
+		abortPtr = task.abortFlag()
+	} else {
+		abortPtr = &abort
+	}
 	lock := new(sync.Mutex)
 
 	var completedBytes int64
@@ -878,7 +903,12 @@ func (obsClient ObsClient) downloadFileConcurrent(input *DownloadFileInput, dfc 
 	publishProgress(listener, event)
 
 	for _, downloadPart := range dfc.DownloadParts {
-		if atomic.LoadInt32(&abort) == 1 {
+		if task != nil {
+			if task.checkAndWaitPause() {
+				break
+			}
+		}
+		if atomic.LoadInt32(abortPtr) == 1 {
 			break
 		}
 		if downloadPart.IsCompleted {
@@ -887,7 +917,7 @@ func (obsClient ObsClient) downloadFileConcurrent(input *DownloadFileInput, dfc 
 			publishProgress(listener, event)
 			continue
 		}
-		task := downloadPartTask{
+		partTask := downloadPartTask{
 			GetObjectInput: GetObjectInput{
 				GetObjectMetadataInput: input.GetObjectMetadataInput,
 				IfMatch:                input.IfMatch,
@@ -899,14 +929,14 @@ func (obsClient ObsClient) downloadFileConcurrent(input *DownloadFileInput, dfc 
 			},
 			obsClient:        &obsClient,
 			extensions:       extensions,
-			abort:            &abort,
+			abort:            abortPtr,
 			partNumber:       downloadPart.PartNumber,
 			tempFileURL:      dfc.TempFileInfo.TempFileUrl,
 			enableCheckpoint: input.EnableCheckpoint,
 		}
 		pool.ExecuteFunc(func() interface{} {
-			result := task.Run()
-			err := handleDownloadTaskResult(result, dfc, task.partNumber, input.EnableCheckpoint, input.CheckpointFile, lock, &completedBytes, listener)
+			result := partTask.Run()
+			err := handleDownloadTaskResult(result, dfc, partTask.partNumber, input.EnableCheckpoint, input.CheckpointFile, lock, &completedBytes, listener)
 			if err != nil && atomic.CompareAndSwapInt32(&errFlag, 0, 1) {
 				downloadPartError.Store(err)
 			}
@@ -922,4 +952,125 @@ func (obsClient ObsClient) downloadFileConcurrent(input *DownloadFileInput, dfc 
 	event = newProgressEvent(TransferCompletedEvent, completedBytes, dfc.ObjectInfo.Size)
 	publishProgress(listener, event)
 	return nil
+}
+
+// TransferTask represents a controllable asynchronous transfer task
+type TransferTask struct {
+	mu       sync.Mutex
+	cond     *sync.Cond
+	status   TransferStatusType
+	abort    int32
+	done     chan struct{}
+	once     sync.Once
+	result   interface{}
+	err      error
+	onCancel func()
+}
+
+func newTransferTask(onCancel func()) *TransferTask {
+	t := &TransferTask{
+		status:   TransferStatusRunning,
+		done:     make(chan struct{}),
+		onCancel: onCancel,
+	}
+	t.cond = sync.NewCond(&t.mu)
+	return t
+}
+
+// Status returns the current status of the task
+func (t *TransferTask) Status() TransferStatusType {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.status
+}
+
+// Pause pauses a running task
+func (t *TransferTask) Pause() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.status != TransferStatusRunning {
+		return fmt.Errorf("cannot pause task in state %s", t.status)
+	}
+	t.status = TransferStatusPaused
+	t.cond.Broadcast()
+	return nil
+}
+
+// Resume resumes a paused task
+func (t *TransferTask) Resume() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.status != TransferStatusPaused {
+		return fmt.Errorf("cannot resume task in state %s", t.status)
+	}
+	t.status = TransferStatusRunning
+	t.cond.Broadcast()
+	return nil
+}
+
+// Cancel cancels the task
+func (t *TransferTask) Cancel() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.status != TransferStatusRunning && t.status != TransferStatusPaused {
+		return fmt.Errorf("cannot cancel task in state %s", t.status)
+	}
+	t.status = TransferStatusCancelled
+	atomic.StoreInt32(&t.abort, 1)
+	t.cond.Broadcast()
+	return nil
+}
+
+// Done returns a channel that is closed when the task completes, fails, or is cancelled
+func (t *TransferTask) Done() <-chan struct{} {
+	return t.done
+}
+
+// GetResult returns the result and error of the task
+func (t *TransferTask) GetResult() (interface{}, error) {
+	return t.result, t.err
+}
+
+// abortFlag returns the internal abort flag pointer for concurrent task sharing
+func (t *TransferTask) abortFlag() *int32 {
+	return &t.abort
+}
+
+func (t *TransferTask) checkAndWaitPause() bool {
+	t.mu.Lock()
+	for t.status == TransferStatusPaused {
+		t.cond.Wait()
+	}
+	cancelled := t.status == TransferStatusCancelled
+	t.mu.Unlock()
+	return cancelled
+}
+
+func (t *TransferTask) isCancelled() bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.status == TransferStatusCancelled
+}
+
+func (t *TransferTask) finish(result interface{}, err error) {
+	t.once.Do(func() {
+		t.mu.Lock()
+		defer t.mu.Unlock()
+		if t.status == TransferStatusRunning || t.status == TransferStatusPaused {
+			if err != nil {
+				t.status = TransferStatusFailed
+			} else {
+				t.status = TransferStatusCompleted
+			}
+		}
+		t.result = result
+		t.err = err
+		close(t.done)
+	})
+}
+
+func (t *TransferTask) cancelCleanup() {
+	if t.onCancel != nil {
+		t.onCancel()
+	}
 }
