@@ -1,4 +1,4 @@
-module github.com/huaweicloud/huaweicloud-sdk-go-obs
+module obs-sdk-go
 
 go 1.17
 

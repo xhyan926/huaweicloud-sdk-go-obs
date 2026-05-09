@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
+	"obs-sdk-go/obs"
 )
 
 // FuzzTransToXml_通用XML转换函数模糊测试

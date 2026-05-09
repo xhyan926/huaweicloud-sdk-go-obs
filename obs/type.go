@@ -465,3 +465,6 @@ const (
 	// InventoryFieldObjectLockMode inventory field: ObjectLockMode
 	InventoryFieldObjectLockMode = "ObjectLockMode"
 )
+
+// TransferStatusType defines the status of a transfer task
+type TransferStatusType string

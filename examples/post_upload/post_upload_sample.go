@@ -43,7 +43,7 @@ import (
 	"log"
 	"os"
 
-	obs "github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
+	obs "obs-sdk-go/obs/obs"
 )
 
 func main() {

@@ -277,14 +277,7 @@ func (h *MockHandler) sendError(w http.ResponseWriter, statusCode int, message s
   <RequestId>mock-error-request-id</RequestId>
 </Error>`, http.StatusText(statusCode), message)
 
-	resp := &ResponseRecord{
-		StatusCode: statusCode,
-		Headers: map[string][]string{
-			"Content-Type": {"application/xml"},
-		},
-		Body: errorBody,
-	}
-
+	w.Header().Set("Content-Type", "application/xml")
 	w.WriteHeader(statusCode)
 	w.Write([]byte(errorBody))
 }

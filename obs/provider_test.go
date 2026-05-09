@@ -214,21 +214,3 @@ func TestEcsSecurityProvider_loadTemporarySecurityHolder_ShouldReturnEmpty_WhenN
 	assert.False(t, ok)
 	assert.Equal(t, emptyTemporarySecurityHolder, holder)
 }
-
-// TestTemporarySecurityHolder_ShouldHaveAllFields tests TemporarySecurityHolder struct
-// Skipping - time.Date parameter issue
-// func TestTemporarySecurityHolder_ShouldHaveAllFields(t *testing.T) {
-// 	holder := TemporarySecurityHolder{
-// 		securityHolder: securityHolder{
-// 			ak:            "test-ak",
-// 			sk:            "test-sk",
-// 			securityToken: "test-token",
-// 		},
-// 		expireDate: time.Date(2023, time.January, 1, 0, 0, 0, time.UTC),
-// 	}
-//
-// 	assert.Equal(t, "test-ak", holder.ak)
-// 	assert.Equal(t, "test-sk", holder.sk)
-// 	assert.Equal(t, "test-token", holder.securityToken)
-// 	assert.False(t, holder.expireDate.IsZero())
-// }

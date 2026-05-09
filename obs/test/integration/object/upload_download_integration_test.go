@@ -9,8 +9,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+	"obs-sdk-go/obs"
+	"obs-sdk-go/obs/test/integration"
 )
 
 // TestUploadDownload_ShouldUploadAndDownloadSuccessfully_GivenSmallFile 测试小文件上传下载
@@ -557,7 +557,7 @@ func TestUploadDownload_RangeDownload(t *testing.T) {
 		// 测试不同范围的下载
 		testRanges := []struct {
 			name  string
-			range string
+			rng   string
 			start int
 			end   int
 		}{
@@ -570,7 +570,7 @@ func TestUploadDownload_RangeDownload(t *testing.T) {
 			input := &obs.GetObjectInput{
 				Bucket: bucket,
 				Key:    objectKey,
-				Range:  test.range,
+				Range:  test.rng,
 			}
 
 			output, err := client.TestClient().GetObject(input)
@@ -593,7 +593,7 @@ func TestUploadDownload_RangeDownload(t *testing.T) {
 			}
 
 			t.Logf("范围下载成功 (%s): %s, 大小: %d bytes",
-				test.name, test.range, len(downloadedContent))
+				test.name, test.rng, len(downloadedContent))
 		}
 
 		client.AddTestCase("范围下载测试通过")

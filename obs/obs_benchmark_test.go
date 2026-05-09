@@ -10,8 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/config"
+	"obs-sdk-go/obs/test/config"
 )
 
 // 性能基准配置

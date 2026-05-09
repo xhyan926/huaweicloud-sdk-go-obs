@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+	"obs-sdk-go/obs"
+	"obs-sdk-go/obs/test/integration"
 )
 
 // TestResumeUpload_ShouldResumeSuccessfully_GivenInterruptedUpload 测试上传断点续传

@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+	"obs-sdk-go/obs"
+	"obs-sdk-go/obs/test/integration"
 )
 
 // TestBasicOperations_ShouldSucceed_GivenValidCredentials 测试基本操作能否成功执行，给定有效的凭证

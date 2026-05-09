@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+	"obs-sdk-go/obs"
+	"obs-sdk-go/obs/test/integration"
 )
 
 // TestAuthentication_ShouldConnectSuccessfully_GivenValidStaticCredentials 测试静态凭证认证

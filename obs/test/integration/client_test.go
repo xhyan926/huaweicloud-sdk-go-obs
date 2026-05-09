@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/config"
+	"obs-sdk-go/obs"
+	"obs-sdk-go/obs/test/config"
 )
 
 // TestNewTestClient_ShouldCreateSuccessfully_GivenValidConfig 测试创建测试客户端

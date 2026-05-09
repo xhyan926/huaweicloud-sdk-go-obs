@@ -5,7 +5,7 @@ package e2e
 import (
 	"testing"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+	"obs-sdk-go/obs/test/integration"
 )
 
 // ExampleClientUsage 展示如何使用集成测试客户端

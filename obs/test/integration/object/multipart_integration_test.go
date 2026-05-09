@@ -11,8 +11,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs"
-	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs/test/integration"
+	"obs-sdk-go/obs"
+	"obs-sdk-go/obs/test/integration"
 )
 
 // TestMultipartUpload_ShouldUploadSuccessfully_GivenBasicMultipart 测试基本分块上传
